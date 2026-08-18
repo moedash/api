@@ -1,3 +1,4 @@
+# buf config for generating the stable proto definitions 
 version: v1
 name: buf.build/temporalio/api
 deps:
@@ -11,6 +12,7 @@ build:
     - google
     # Same for nexusannotations - local copy for api-linter, BSR dep for buf
     - nexusannotations
+    - temporal/api_next
 breaking:
   use:
     - WIRE_JSON

@@ -11,11 +11,12 @@ option csharp_namespace = "Temporalio.Api.Nexus.V1";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
-import "temporal/api/common/v1/message.proto";
-import "temporal/api/enums/v1/common.proto";
-import "temporal/api/enums/v1/nexus.proto";
-import "temporal/api/failure/v1/message.proto";
-import "temporal/api/sdk/v1/user_metadata.proto";
+import "temporal/api_next/common/v1/message.proto";
+import "temporal/api_next/enums/v1/common.proto";
+import "temporal/api_next/enums/v1/nexus.proto";
+import "temporal/api_next/failure/v1/message.proto";
+import "temporal/api_next/sdk/v1/user_metadata.proto";
+import "temporal/api_next/protometa/v1/experimental.proto";
 
 // A general purpose failure message.
 // See: https://github.com/nexus-rpc/api/blob/main/SPEC.md#failure
@@ -332,6 +333,8 @@ message NexusOperationExecutionInfo {
 
     // Updated once on scheduled and once on terminal status.
     int64 state_size_bytes = 29;
+
+    string tag = 30 [(temporal.api.protometa.v1.experimental) = "nexus-operation-tags"];
 }
 
 // Limited Nexus operation information returned in the list response.
