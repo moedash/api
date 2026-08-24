@@ -17,6 +17,7 @@ import "temporal/api/enums/v1/failed_cause.proto";
 import "temporal/api/enums/v1/update.proto";
 import "temporal/api/enums/v1/workflow.proto";
 import "temporal/api/common/v1/message.proto";
+import "temporal/api/stream/v1/message.proto";
 import "temporal/api/deployment/v1/message.proto";
 import "temporal/api/failure/v1/message.proto";
 import "temporal/api/taskqueue/v1/message.proto";
@@ -369,6 +370,12 @@ message WorkflowTaskCompletedEventAttributes {
     // execution. UNSPECIFIED means the task was completed by an unversioned worker. This value
     // updates workflow execution's `versioning_info.behavior`.
     temporal.api.enums.v1.VersioningBehavior versioning_behavior = 8;
+
+    // Offset ranges this Workflow Task consumed from streams it subscribes to.
+    // Recorded on every task where a subscription is active, including when it
+    // observed nothing: an empty range is a fact replay must reproduce, and
+    // omitting it would let replay deliver messages the Workflow did not have.
+    repeated temporal.api.stream.v1.StreamCursor stream_cursors = 20;
     // The Worker Deployment Version that completed this task. Must be set if `versioning_behavior`
     // is set. This value updates workflow execution's `versioning_info.version`.
     // Deprecated. Replaced with `deployment_version`.
