@@ -30,6 +30,15 @@ message StreamSlice {
     // which is a fact replay has to reproduce rather than an absence of one.
     int64 to_offset = 4;
     repeated StreamMessage messages = 5;
+    // The WorkflowTaskCompleted event whose stream_cursors recorded this range.
+    // Set only when the server is re-supplying a range for a task being
+    // replayed; a slice for the task now being started leaves it unset, because
+    // the event closing that task does not exist yet.
+    //
+    // Replay needs this because a Workflow Task response carries one slice set
+    // while a cache miss replays every prior task, so the ranges have to be
+    // matched to the events that recorded them rather than to the response.
+    int64 workflow_task_completed_event_id = 6;
 }
 
 // The offsets a Workflow Task consumed, without the payloads. Recorded on
