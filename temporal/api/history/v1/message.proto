@@ -960,6 +960,19 @@ message ActivityPropertiesModifiedExternallyEventAttributes {
     temporal.api.common.v1.RetryPolicy new_retry_policy = 2;
 }
 
+message WorkflowStreamSubscribedEventAttributes {
+    // The WorkflowTaskCompleted event of the task whose command created this
+    // subscription.
+    int64 workflow_task_completed_event_id = 1;
+    // Stream the Workflow subscribed to.
+    string stream_id = 2;
+    // The offset the subscription actually starts from. Resolved by the server
+    // when the subscription is registered and recorded here, so replay reads
+    // the resolved value rather than resolving it again against a stream that
+    // has since moved.
+    int64 start_offset = 3;
+}
+
 message WorkflowExecutionUpdateAcceptedEventAttributes {
     // The instance ID of the update protocol that generated this event.
     string protocol_instance_id = 1;
@@ -1283,6 +1296,7 @@ message HistoryEvent {
         WorkflowExecutionPausedEventAttributes workflow_execution_paused_event_attributes = 63;
         WorkflowExecutionUnpausedEventAttributes workflow_execution_unpaused_event_attributes = 64;
         WorkflowExecutionTimeSkippingTransitionedEventAttributes workflow_execution_time_skipping_transitioned_event_attributes = 65;
+        WorkflowStreamSubscribedEventAttributes workflow_stream_subscribed_event_attributes = 66;
     }
 }
 
