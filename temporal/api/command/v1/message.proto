@@ -326,6 +326,7 @@ message Command {
         ScheduleNexusOperationCommandAttributes schedule_nexus_operation_command_attributes = 18;
         RequestCancelNexusOperationCommandAttributes request_cancel_nexus_operation_command_attributes = 19;
         AddStreamMessagesCommandAttributes add_stream_messages_command_attributes = 20;
+        SubscribeStreamCommandAttributes subscribe_stream_command_attributes = 21;
     }
 }
 
@@ -335,4 +336,20 @@ message AddStreamMessagesCommandAttributes {
     // Empty means the Workflow's default output stream.
     string stream_id = 1;
     repeated temporal.api.stream.v1.StreamMessage messages = 2;
+}
+
+// Subscribe this Workflow to a stream, so later Workflow Tasks carry the ranges
+// it has not consumed yet.
+//
+// The stream's addressing is resolved by the server rather than supplied here.
+// A Workflow cannot look it up without doing I/O, and a value it carried would
+// be a reading rather than a fact, so it could differ on replay.
+message SubscribeStreamCommandAttributes {
+    // Stream to consume. A stream in another execution is addressed by its id;
+    // one this Workflow owns is addressed by the name it was published under.
+    string stream_id = 1;
+    // Where to start. Negative means from wherever the stream is when the
+    // subscription is registered, which the server resolves and records so
+    // replay does not resolve it again.
+    int64 start_offset = 2;
 }
