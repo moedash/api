@@ -12,9 +12,14 @@ option csharp_namespace = "Temporalio.Api.Stream.V1";
 import "temporal/api/common/v1/message.proto";
 
 message StreamMessage {
+    // The message itself, stored as sent.
     temporal.api.common.v1.Payload body = 1;
+    // Producer-supplied provenance, stored as sent.
     map<string, temporal.api.common.v1.Payload> metadata = 2;
+    // Producer-supplied grouping label, stored as sent.
     string topic = 3;
+    // Producer-supplied position within `topic`. The server stores it as sent
+    // and does not assign, validate or order by it.
     int64 topic_sequence = 4;
 }
 
@@ -23,6 +28,8 @@ message StreamMessage {
 // themselves are never written to History.
 message StreamSlice {
     string stream_id = 1;
+    // Run id of the execution that owns the stream. Set on both a slice for the
+    // task being started and a re-supplied one.
     string run_id = 2;
     // Inclusive.
     int64 from_offset = 3;

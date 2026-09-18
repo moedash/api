@@ -370,12 +370,6 @@ message WorkflowTaskCompletedEventAttributes {
     // execution. UNSPECIFIED means the task was completed by an unversioned worker. This value
     // updates workflow execution's `versioning_info.behavior`.
     temporal.api.enums.v1.VersioningBehavior versioning_behavior = 8;
-
-    // Offset ranges this Workflow Task consumed from streams it subscribes to.
-    // Recorded on every task where a subscription is active, including when it
-    // observed nothing: an empty range is a fact replay must reproduce, and
-    // omitting it would let replay deliver messages the Workflow did not have.
-    repeated temporal.api.stream.v1.StreamCursor stream_cursors = 20;
     // The Worker Deployment Version that completed this task. Must be set if `versioning_behavior`
     // is set. This value updates workflow execution's `versioning_info.version`.
     // Deprecated. Replaced with `deployment_version`.
@@ -386,6 +380,13 @@ message WorkflowTaskCompletedEventAttributes {
     // The Worker Deployment Version that completed this task. Must be set if `versioning_behavior`
     // is set. This value updates workflow execution's `versioning_info.deployment_version`.
     temporal.api.deployment.v1.WorkerDeploymentVersion deployment_version = 11;
+
+    // Offset ranges this Workflow Task consumed from streams it subscribes to.
+    // Recorded on every task where a subscription is active, including when it
+    // observed nothing: an empty range is a fact replay must reproduce, and
+    // omitting it would let replay deliver messages the Workflow did not have.
+    // Numbered 20 to leave 14 through 19 free for fields added on the main line.
+    repeated temporal.api.stream.v1.StreamCursor stream_cursors = 20;
 }
 
 message WorkflowTaskTimedOutEventAttributes {

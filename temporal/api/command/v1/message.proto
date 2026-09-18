@@ -331,7 +331,8 @@ message Command {
 }
 
 // Appends to a stream the Workflow owns. Applied inside the Workflow Task's own
-// commit, so it emits no History Event and does not schedule further work.
+// commit. Produces one `WorkflowStreamMessagesAdded` event carrying the offset
+// range and none of the payload; it schedules no further work.
 message AddStreamMessagesCommandAttributes {
     // Empty means the Workflow's default output stream.
     string stream_id = 1;
@@ -347,6 +348,9 @@ message AddStreamMessagesCommandAttributes {
 message SubscribeStreamCommandAttributes {
     // Stream to consume. A stream in another execution is addressed by its id;
     // one this Workflow owns is addressed by the name it was published under.
+    // The server resolves an owned name first and falls back to a standalone
+    // id, so a Workflow that owns a stream under this name cannot reach a
+    // standalone stream with the same id.
     string stream_id = 1;
     // Where to start. Negative means from wherever the stream is when the
     // subscription is registered, which the server resolves and records so
