@@ -20086,20 +20086,24 @@
       "type": "object",
       "properties": {
         "body": {
-          "$ref": "#/definitions/v1Payload"
+          "$ref": "#/definitions/v1Payload",
+          "description": "The message itself, stored as sent."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/v1Payload"
-          }
+          },
+          "description": "Producer-supplied provenance, stored as sent."
         },
         "topic": {
-          "type": "string"
+          "type": "string",
+          "description": "Producer-supplied grouping label, stored as sent."
         },
         "topicSequence": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Producer-supplied position within `topic`. The server stores it as sent\nand does not assign, validate or order by it."
         }
       }
     },
@@ -20110,7 +20114,8 @@
           "type": "string"
         },
         "runId": {
-          "type": "string"
+          "type": "string",
+          "description": "Run id of the execution that owns the stream. Set on both a slice for the\ntask being started and a re-supplied one."
         },
         "fromOffset": {
           "type": "string",
@@ -22597,14 +22602,6 @@
           "$ref": "#/definitions/v1VersioningBehavior",
           "description": "Versioning behavior sent by the worker that completed this task for this particular workflow\nexecution. UNSPECIFIED means the task was completed by an unversioned worker. This value\nupdates workflow execution's `versioning_info.behavior`."
         },
-        "streamCursors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1StreamCursor"
-          },
-          "description": "Offset ranges this Workflow Task consumed from streams it subscribes to.\nRecorded on every task where a subscription is active, including when it\nobserved nothing: an empty range is a fact replay must reproduce, and\nomitting it would let replay deliver messages the Workflow did not have."
-        },
         "workerDeploymentVersion": {
           "type": "string",
           "description": "The Worker Deployment Version that completed this task. Must be set if `versioning_behavior`\nis set. This value updates workflow execution's `versioning_info.version`.\nDeprecated. Replaced with `deployment_version`."
@@ -22616,6 +22613,14 @@
         "deploymentVersion": {
           "$ref": "#/definitions/v1WorkerDeploymentVersion",
           "description": "The Worker Deployment Version that completed this task. Must be set if `versioning_behavior`\nis set. This value updates workflow execution's `versioning_info.deployment_version`."
+        },
+        "streamCursors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StreamCursor"
+          },
+          "description": "Offset ranges this Workflow Task consumed from streams it subscribes to.\nRecorded on every task where a subscription is active, including when it\nobserved nothing: an empty range is a fact replay must reproduce, and\nomitting it would let replay deliver messages the Workflow did not have.\nNumbered 20 to leave 14 through 19 free for fields added on the main line."
         }
       }
     },
@@ -22692,10 +22697,13 @@
         "WORKFLOW_TASK_FAILED_CAUSE_PAYLOADS_TOO_LARGE",
         "WORKFLOW_TASK_FAILED_CAUSE_EXTERNAL_STORAGE_FAILURE",
         "WORKFLOW_TASK_FAILED_CAUSE_WORKFLOW_PAUSE_REQUESTED_BEFORE_TASK_STARTED",
-        "WORKFLOW_TASK_FAILED_CAUSE_REQUEST_TOO_LARGE"
+        "WORKFLOW_TASK_FAILED_CAUSE_REQUEST_TOO_LARGE",
+        "WORKFLOW_TASK_FAILED_CAUSE_BAD_ADD_STREAM_MESSAGES_ATTRIBUTES",
+        "WORKFLOW_TASK_FAILED_CAUSE_BAD_SUBSCRIBE_STREAM_ATTRIBUTES",
+        "WORKFLOW_TASK_FAILED_CAUSE_STREAM_RANGE_UNAVAILABLE"
       ],
       "default": "WORKFLOW_TASK_FAILED_CAUSE_UNSPECIFIED",
-      "description": "Workflow tasks can fail for various reasons. Note that some of these reasons can only originate\nfrom the server, and some of them can only originate from the SDK/worker.\n\n - WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_COMMAND: Between starting and completing the workflow task (with a workflow completion command), some\nnew command (like a signal) was processed into workflow history. The outstanding task will be\nfailed with this reason, and a worker must pick up a new task.\n - WORKFLOW_TASK_FAILED_CAUSE_RESET_STICKY_TASK_QUEUE: The worker wishes to fail the task and have the next one be generated on a normal, not sticky\nqueue. Generally workers should prefer to use the explicit `ResetStickyTaskQueue` RPC call.\n - WORKFLOW_TASK_FAILED_CAUSE_NON_DETERMINISTIC_ERROR: The worker encountered a mismatch while replaying history between what was expected, and\nwhat the workflow code actually did.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_CHILD_WORKFLOWS_LIMIT_EXCEEDED: We send the below error codes to users when their requests would violate a size constraint\nof their workflow. We do this to ensure that the state of their workflow does not become too\nlarge because that can cause severe performance degradation. You can modify the thresholds for\neach of these errors within your dynamic config.\n\nSpawning a new child workflow would cause this workflow to exceed its limit of pending child\nworkflows.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_ACTIVITIES_LIMIT_EXCEEDED: Starting a new activity would cause this workflow to exceed its limit of pending activities\nthat we track.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_SIGNALS_LIMIT_EXCEEDED: A workflow has a buffer of signals that have not yet reached their destination. We return this\nerror when sending a new signal would exceed the capacity of this buffer.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_REQUEST_CANCEL_LIMIT_EXCEEDED: Similarly, we have a buffer of pending requests to cancel other workflows. We return this error\nwhen our capacity for pending cancel requests is already reached.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_UPDATE_WORKFLOW_EXECUTION_MESSAGE: Workflow execution update message (update.Acceptance, update.Rejection, or update.Response)\nhas wrong format, or missing required fields.\n - WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_UPDATE: Similar to WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_COMMAND, but for updates.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_SCHEDULE_NEXUS_OPERATION_ATTRIBUTES: A workflow task completed with an invalid ScheduleNexusOperation command.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_NEXUS_OPERATIONS_LIMIT_EXCEEDED: A workflow task completed requesting to schedule a Nexus Operation exceeding the server configured limit.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_REQUEST_CANCEL_NEXUS_OPERATION_ATTRIBUTES: A workflow task completed with an invalid RequestCancelNexusOperation command.\n - WORKFLOW_TASK_FAILED_CAUSE_FEATURE_DISABLED: A workflow task completed requesting a feature that's disabled on the server (either system wide or - typically -\nfor the workflow's namespace).\nCheck the workflow task failure message for more information.\n - WORKFLOW_TASK_FAILED_CAUSE_GRPC_MESSAGE_TOO_LARGE: A workflow task failed because a grpc message was too large.\n - WORKFLOW_TASK_FAILED_CAUSE_PAYLOADS_TOO_LARGE: A workflow task failed because payloads were too large.\n - WORKFLOW_TASK_FAILED_CAUSE_EXTERNAL_STORAGE_FAILURE: A workflow task failed because an external storage operation failed.\nCheck the workflow task failure message for more information.\n - WORKFLOW_TASK_FAILED_CAUSE_WORKFLOW_PAUSE_REQUESTED_BEFORE_TASK_STARTED: A workflow task is failed because the workflow is paused before the task is started.\n - WORKFLOW_TASK_FAILED_CAUSE_REQUEST_TOO_LARGE: A workflow task failed because the request exceeded a size limit."
+      "description": "Workflow tasks can fail for various reasons. Note that some of these reasons can only originate\nfrom the server, and some of them can only originate from the SDK/worker.\n\n - WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_COMMAND: Between starting and completing the workflow task (with a workflow completion command), some\nnew command (like a signal) was processed into workflow history. The outstanding task will be\nfailed with this reason, and a worker must pick up a new task.\n - WORKFLOW_TASK_FAILED_CAUSE_RESET_STICKY_TASK_QUEUE: The worker wishes to fail the task and have the next one be generated on a normal, not sticky\nqueue. Generally workers should prefer to use the explicit `ResetStickyTaskQueue` RPC call.\n - WORKFLOW_TASK_FAILED_CAUSE_NON_DETERMINISTIC_ERROR: The worker encountered a mismatch while replaying history between what was expected, and\nwhat the workflow code actually did.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_CHILD_WORKFLOWS_LIMIT_EXCEEDED: We send the below error codes to users when their requests would violate a size constraint\nof their workflow. We do this to ensure that the state of their workflow does not become too\nlarge because that can cause severe performance degradation. You can modify the thresholds for\neach of these errors within your dynamic config.\n\nSpawning a new child workflow would cause this workflow to exceed its limit of pending child\nworkflows.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_ACTIVITIES_LIMIT_EXCEEDED: Starting a new activity would cause this workflow to exceed its limit of pending activities\nthat we track.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_SIGNALS_LIMIT_EXCEEDED: A workflow has a buffer of signals that have not yet reached their destination. We return this\nerror when sending a new signal would exceed the capacity of this buffer.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_REQUEST_CANCEL_LIMIT_EXCEEDED: Similarly, we have a buffer of pending requests to cancel other workflows. We return this error\nwhen our capacity for pending cancel requests is already reached.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_UPDATE_WORKFLOW_EXECUTION_MESSAGE: Workflow execution update message (update.Acceptance, update.Rejection, or update.Response)\nhas wrong format, or missing required fields.\n - WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_UPDATE: Similar to WORKFLOW_TASK_FAILED_CAUSE_UNHANDLED_COMMAND, but for updates.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_SCHEDULE_NEXUS_OPERATION_ATTRIBUTES: A workflow task completed with an invalid ScheduleNexusOperation command.\n - WORKFLOW_TASK_FAILED_CAUSE_PENDING_NEXUS_OPERATIONS_LIMIT_EXCEEDED: A workflow task completed requesting to schedule a Nexus Operation exceeding the server configured limit.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_REQUEST_CANCEL_NEXUS_OPERATION_ATTRIBUTES: A workflow task completed with an invalid RequestCancelNexusOperation command.\n - WORKFLOW_TASK_FAILED_CAUSE_FEATURE_DISABLED: A workflow task completed requesting a feature that's disabled on the server (either system wide or - typically -\nfor the workflow's namespace).\nCheck the workflow task failure message for more information.\n - WORKFLOW_TASK_FAILED_CAUSE_GRPC_MESSAGE_TOO_LARGE: A workflow task failed because a grpc message was too large.\n - WORKFLOW_TASK_FAILED_CAUSE_PAYLOADS_TOO_LARGE: A workflow task failed because payloads were too large.\n - WORKFLOW_TASK_FAILED_CAUSE_EXTERNAL_STORAGE_FAILURE: A workflow task failed because an external storage operation failed.\nCheck the workflow task failure message for more information.\n - WORKFLOW_TASK_FAILED_CAUSE_WORKFLOW_PAUSE_REQUESTED_BEFORE_TASK_STARTED: A workflow task is failed because the workflow is paused before the task is started.\n - WORKFLOW_TASK_FAILED_CAUSE_REQUEST_TOO_LARGE: A workflow task failed because the request exceeded a size limit.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_ADD_STREAM_MESSAGES_ATTRIBUTES: A workflow task completed with an invalid AddStreamMessages command.\n - WORKFLOW_TASK_FAILED_CAUSE_BAD_SUBSCRIBE_STREAM_ATTRIBUTES: A workflow task completed with an invalid SubscribeStream command.\n - WORKFLOW_TASK_FAILED_CAUSE_STREAM_RANGE_UNAVAILABLE: A workflow task could not be started because a stream range it consumed and recorded in\nHistory can no longer be served, for example after truncation or because it exceeds the\nreplay bound. Check the workflow task failure message for more information."
     },
     "v1WorkflowTaskFailedEventAttributes": {
       "type": "object",
