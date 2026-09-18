@@ -13,6 +13,11 @@
     - "core::0123::resource-annotation" # We don't require resource annotations on all messages -- https://linter.aip.dev/123/resource-annotation
 
 - included_paths:
+    - "**/stream/v1/message.proto"
+  disabled_rules:
+    - "core::0140::prepositions" # Half-open offset ranges are spelled `from_offset`/`to_offset` here and in the server's own protos -- https://linter.aip.dev/140/prepositions
+
+- included_paths:
     - "**/workflowservice/v1/request_response.proto"
     - "**/operatorservice/v1/request_response.proto"
   disabled_rules:
