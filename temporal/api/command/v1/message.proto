@@ -336,7 +336,9 @@ message Command {
 message AddStreamMessagesCommandAttributes {
     // Empty means the Workflow's default output stream.
     string stream_id = 1;
-    repeated temporal.api.stream.v1.StreamMessage messages = 2;
+    // Stored in order. The server sets `producer_id` to empty on each record,
+    // because the owning Workflow is the producer here.
+    repeated temporal.api.stream.v1.StreamRecord records = 2;
 }
 
 // Subscribe this Workflow to a stream, so later Workflow Tasks carry the ranges
