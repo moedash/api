@@ -325,15 +325,16 @@ message Command {
 
         ScheduleNexusOperationCommandAttributes schedule_nexus_operation_command_attributes = 18;
         RequestCancelNexusOperationCommandAttributes request_cancel_nexus_operation_command_attributes = 19;
-        AddStreamMessagesCommandAttributes add_stream_messages_command_attributes = 20;
+        AppendStreamRecordsCommandAttributes append_stream_records_command_attributes = 20;
         SubscribeStreamCommandAttributes subscribe_stream_command_attributes = 21;
     }
 }
 
-// Appends to a stream the Workflow owns. Applied inside the Workflow Task's own
-// commit. Produces one `WorkflowStreamMessagesAdded` event carrying the offset
-// range and none of the payload; it schedules no further work.
-message AddStreamMessagesCommandAttributes {
+// Appends records to a stream the Workflow owns. Applied inside the Workflow
+// Task's own commit. Produces one `WorkflowStreamRecordsAppended` event
+// carrying the offset range and none of the payload; it schedules no further
+// work.
+message AppendStreamRecordsCommandAttributes {
     // Empty means the Workflow's default output stream.
     string stream_id = 1;
     // Stored in order. The server sets `producer_id` to empty on each record,

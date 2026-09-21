@@ -15,7 +15,7 @@
 - included_paths:
     - "**/stream/v1/message.proto"
   disabled_rules:
-    - "core::0140::prepositions" # Half-open offset ranges are spelled `from_offset`/`to_offset` here and in the server's own protos -- https://linter.aip.dev/140/prepositions
+    - "core::0140::prepositions" # Half-open offset ranges on StreamSlice and StreamRange are spelled `from_offset`/`to_offset`, as in the server's own protos -- https://linter.aip.dev/140/prepositions
 
 - included_paths:
     - "**/workflowservice/v1/request_response.proto"
