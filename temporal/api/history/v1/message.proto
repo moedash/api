@@ -385,8 +385,11 @@ message WorkflowTaskCompletedEventAttributes {
     // Recorded on every task where a subscription is active, including when it
     // observed nothing: an empty range is a fact replay must reproduce, and
     // omitting it would let replay deliver records the Workflow did not have.
-    // Numbered 20 to leave 14 through 19 free for fields added on the main line.
     repeated temporal.api.stream.v1.StreamRange consumed_stream_ranges = 20;
+
+    // Held for fields added on the main line, so a rebase does not land one of
+    // them on a number this fork already writes.
+    reserved 14 to 19;
 }
 
 message WorkflowTaskTimedOutEventAttributes {
