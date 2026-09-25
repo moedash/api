@@ -37,6 +37,9 @@ message StreamRecord {
 // offsets it covers. The offsets are what History records; the records
 // themselves are never written to History.
 message StreamSlice {
+    // The stream, as the subscribing command addressed it: either the name of
+    // a stream the consuming Workflow owns or the id of one in another
+    // execution.
     string stream_id = 1;
     // Run id of the execution that owns the stream. Set on both a slice for the
     // task being started and a re-supplied one.
@@ -62,6 +65,9 @@ message StreamSlice {
 // WorkflowTaskCompleted so History grows with Workflow Tasks rather than with
 // records.
 message StreamRange {
+    // The stream, as the subscribing command addressed it: either the name of
+    // a stream the consuming Workflow owns or the id of one in another
+    // execution.
     string stream_id = 1;
     // Inclusive.
     int64 from_offset = 2;

@@ -967,7 +967,9 @@ message WorkflowStreamSubscribedEventAttributes {
     // The WorkflowTaskCompleted event of the task whose command created this
     // subscription.
     int64 workflow_task_completed_event_id = 1;
-    // Stream the Workflow subscribed to.
+    // The stream the Workflow subscribed to, as the command addressed it:
+    // either the name of a stream this Workflow owns or the id of one in
+    // another execution.
     string stream_id = 2;
     // The offset the subscription actually starts from. Resolved by the server
     // when the subscription is registered and recorded here, so replay reads
