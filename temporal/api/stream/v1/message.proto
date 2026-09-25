@@ -14,8 +14,13 @@ import "temporal/api/common/v1/message.proto";
 // One entry in a stream. The record is the wire format: stores keep it
 // serialized as is and readers in every language decode the same bytes.
 message StreamRecord {
-    // The value the producer published, stored as sent. A payload codec
-    // applies here as it does to any other payload.
+    // The value the producer published, stored as sent.
+    //
+    // A payload codec applies on the paths this API owns: the append command on
+    // RespondWorkflowTaskCompleted, and the slices on PollWorkflowTaskQueue.
+    // Records a producer writes or reads through the stream service take a
+    // different path, whose messages are not part of this API yet and so are
+    // outside what a codec-applying proxy walks.
     temporal.api.common.v1.Payload body = 1;
     // Producer-supplied provenance, stored as sent.
     map<string, temporal.api.common.v1.Payload> metadata = 2;
