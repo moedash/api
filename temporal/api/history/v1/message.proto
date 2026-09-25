@@ -985,14 +985,20 @@ message WorkflowStreamRecordsAppendedEventAttributes {
     // The WorkflowTaskCompleted event of the task whose command appended this
     // batch.
     int64 workflow_task_completed_event_id = 1;
-    // Stream the Workflow appended to.
+    // Name of the stream the Workflow appended to.
     string stream_id = 2;
-    // Offset the first record of the batch landed at.
-    int64 first_offset = 3;
-    // How many records the batch held. With first_offset this names the range
-    // without carrying any of it, which is what keeps this event a fixed size
-    // no matter how large the batch or its payloads are.
-    int64 record_count = 4;
+    // Inclusive. Same range vocabulary as StreamRange and StreamSlice, so a
+    // reader does not have to remember which of the three counts and which
+    // bounds.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
+    int64 from_offset = 3;
+    // Exclusive. With from_offset this names the range without carrying any of
+    // it, which is what keeps this event a fixed size no matter how large the
+    // batch or its payloads are.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
+    int64 to_offset = 4;
 }
 
 message WorkflowExecutionUpdateAcceptedEventAttributes {

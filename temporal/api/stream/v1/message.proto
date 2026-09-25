@@ -45,9 +45,13 @@ message StreamSlice {
     // task being started and a re-supplied one.
     string run_id = 2;
     // Inclusive.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
     int64 from_offset = 3;
     // Exclusive. Equal to from_offset when the subscription observed nothing,
     // which is a fact replay has to reproduce rather than an absence of one.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
     int64 to_offset = 4;
     repeated StreamRecord records = 5;
     // The WorkflowTaskCompleted event whose consumed_stream_ranges recorded
@@ -70,8 +74,12 @@ message StreamRange {
     // execution.
     string stream_id = 1;
     // Inclusive.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
     int64 from_offset = 2;
     // Exclusive.
+    // (-- api-linter: core::0140::prepositions=disabled
+    //     aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
     int64 to_offset = 3;
 }
 
