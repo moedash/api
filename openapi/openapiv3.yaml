@@ -17700,12 +17700,22 @@ components:
       properties:
         streamId:
           type: string
+          description: |-
+            The stream, as the subscribing command addressed it: either the name of
+             a stream the consuming Workflow owns or the id of one in another
+             execution.
         fromOffset:
           type: string
-          description: Inclusive.
+          description: |-
+            Inclusive.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
         toOffset:
           type: string
-          description: Exclusive.
+          description: |-
+            Exclusive.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
       description: |-
         The offsets a Workflow Task consumed, without the payloads. Recorded on
          WorkflowTaskCompleted so History grows with Workflow Tasks rather than with
@@ -17717,8 +17727,13 @@ components:
           allOf:
             - $ref: '#/components/schemas/Payload'
           description: |-
-            The value the producer published, stored as sent. A payload codec
-             applies here as it does to any other payload.
+            The value the producer published, stored as sent.
+
+             A payload codec applies on the paths this API owns: the append command on
+             RespondWorkflowTaskCompleted, and the slices on PollWorkflowTaskQueue.
+             Records a producer writes or reads through the stream service take a
+             different path, whose messages are not part of this API yet and so are
+             outside what a codec-applying proxy walks.
         metadata:
           type: object
           additionalProperties:
@@ -17746,8 +17761,9 @@ components:
         sequence:
           type: string
           description: |-
-            The producer's position within its attempt, or -1 when unnumbered.
-             Stored as sent; the server does not assign, validate or order by it.
+            The producer's position within its attempt, zero when it does not number
+             its records. Stored as sent; the server does not assign, validate or
+             order by it, and the stream's own offsets are what order a read.
       description: |-
         One entry in a stream. The record is the wire format: stores keep it
          serialized as is and readers in every language decode the same bytes.
@@ -17756,6 +17772,10 @@ components:
       properties:
         streamId:
           type: string
+          description: |-
+            The stream, as the subscribing command addressed it: either the name of
+             a stream the consuming Workflow owns or the id of one in another
+             execution.
         runId:
           type: string
           description: |-
@@ -17763,12 +17783,17 @@ components:
              task being started and a re-supplied one.
         fromOffset:
           type: string
-          description: Inclusive.
+          description: |-
+            Inclusive.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
         toOffset:
           type: string
           description: |-
             Exclusive. Equal to from_offset when the subscription observed nothing,
              which is a fact replay has to reproduce rather than an absence of one.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
         records:
           type: array
           items:
@@ -21145,16 +21170,23 @@ components:
              batch.
         streamId:
           type: string
-          description: Stream the Workflow appended to.
-        firstOffset:
-          type: string
-          description: Offset the first record of the batch landed at.
-        recordCount:
+          description: Name of the stream the Workflow appended to.
+        fromOffset:
           type: string
           description: |-
-            How many records the batch held. With first_offset this names the range
-             without carrying any of it, which is what keeps this event a fixed size
-             no matter how large the batch or its payloads are.
+            Inclusive. Same range vocabulary as StreamRange and StreamSlice, so a
+             reader does not have to remember which of the three counts and which
+             bounds.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
+        toOffset:
+          type: string
+          description: |-
+            Exclusive. With from_offset this names the range without carrying any of
+             it, which is what keeps this event a fixed size no matter how large the
+             batch or its payloads are.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "from" and "to" name a half-open offset range. --)
     WorkflowStreamSubscribedEventAttributes:
       type: object
       properties:
@@ -21165,7 +21197,10 @@ components:
              subscription.
         streamId:
           type: string
-          description: Stream the Workflow subscribed to.
+          description: |-
+            The stream the Workflow subscribed to, as the command addressed it:
+             either the name of a stream this Workflow owns or the id of one in
+             another execution.
         startOffset:
           type: string
           description: |-
@@ -21253,7 +21288,6 @@ components:
              Recorded on every task where a subscription is active, including when it
              observed nothing: an empty range is a fact replay must reproduce, and
              omitting it would let replay deliver records the Workflow did not have.
-             Numbered 20 to leave 14 through 19 free for fields added on the main line.
     WorkflowTaskCompletedMetadata:
       type: object
       properties:

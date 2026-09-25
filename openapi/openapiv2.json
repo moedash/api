@@ -20069,7 +20069,8 @@
       "type": "object",
       "properties": {
         "streamId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stream, as the subscribing command addressed it: either the name of\na stream the consuming Workflow owns or the id of one in another\nexecution."
         },
         "fromOffset": {
           "type": "string",
@@ -20089,7 +20090,7 @@
       "properties": {
         "body": {
           "$ref": "#/definitions/v1Payload",
-          "description": "The value the producer published, stored as sent. A payload codec\napplies here as it does to any other payload."
+          "description": "The value the producer published, stored as sent.\n\nA payload codec applies on the paths this API owns: the append command on\nRespondWorkflowTaskCompleted, and the slices on PollWorkflowTaskQueue.\nRecords a producer writes or reads through the stream service take a\ndifferent path, whose messages are not part of this API yet and so are\noutside what a codec-applying proxy walks."
         },
         "metadata": {
           "type": "object",
@@ -20118,7 +20119,7 @@
         "sequence": {
           "type": "string",
           "format": "int64",
-          "description": "The producer's position within its attempt, or -1 when unnumbered.\nStored as sent; the server does not assign, validate or order by it."
+          "description": "The producer's position within its attempt, zero when it does not number\nits records. Stored as sent; the server does not assign, validate or\norder by it, and the stream's own offsets are what order a read."
         }
       },
       "description": "One entry in a stream. The record is the wire format: stores keep it\nserialized as is and readers in every language decode the same bytes."
@@ -20137,7 +20138,8 @@
       "type": "object",
       "properties": {
         "streamId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stream, as the subscribing command addressed it: either the name of\na stream the consuming Workflow owns or the id of one in another\nexecution."
         },
         "runId": {
           "type": "string",
@@ -22554,17 +22556,17 @@
         },
         "streamId": {
           "type": "string",
-          "description": "Stream the Workflow appended to."
+          "description": "Name of the stream the Workflow appended to."
         },
-        "firstOffset": {
+        "fromOffset": {
           "type": "string",
           "format": "int64",
-          "description": "Offset the first record of the batch landed at."
+          "description": "Inclusive. Same range vocabulary as StreamRange and StreamSlice, so a\nreader does not have to remember which of the three counts and which\nbounds."
         },
-        "recordCount": {
+        "toOffset": {
           "type": "string",
           "format": "int64",
-          "description": "How many records the batch held. With first_offset this names the range\nwithout carrying any of it, which is what keeps this event a fixed size\nno matter how large the batch or its payloads are."
+          "description": "Exclusive. With from_offset this names the range without carrying any of\nit, which is what keeps this event a fixed size no matter how large the\nbatch or its payloads are."
         }
       }
     },
@@ -22578,7 +22580,7 @@
         },
         "streamId": {
           "type": "string",
-          "description": "Stream the Workflow subscribed to."
+          "description": "The stream the Workflow subscribed to, as the command addressed it:\neither the name of a stream this Workflow owns or the id of one in\nanother execution."
         },
         "startOffset": {
           "type": "string",
@@ -22646,7 +22648,7 @@
             "type": "object",
             "$ref": "#/definitions/v1StreamRange"
           },
-          "description": "Offset ranges this Workflow Task consumed from streams it subscribes to.\nRecorded on every task where a subscription is active, including when it\nobserved nothing: an empty range is a fact replay must reproduce, and\nomitting it would let replay deliver records the Workflow did not have.\nNumbered 20 to leave 14 through 19 free for fields added on the main line."
+          "description": "Offset ranges this Workflow Task consumed from streams it subscribes to.\nRecorded on every task where a subscription is active, including when it\nobserved nothing: an empty range is a fact replay must reproduce, and\nomitting it would let replay deliver records the Workflow did not have."
         }
       }
     },
