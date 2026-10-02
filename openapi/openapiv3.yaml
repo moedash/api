@@ -1317,6 +1317,220 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+  /api/v1/namespaces/{namespace}/channels/{channel}:
+    get:
+      tags:
+        - WorkflowService
+      description: |-
+        DescribeChannel returns the listeners of a channel and its latest
+         notification.
+      operationId: DescribeChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeChannelResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /api/v1/namespaces/{namespace}/channels/{channel}/listeners:
+    post:
+      tags:
+        - WorkflowService
+      description: |-
+        RegisterChannelListener registers a callback as a listener of a channel. A
+         Workflow registers itself with the `SubscribeNotificationChannel` command
+         instead.
+      operationId: RegisterChannelListener
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterChannelListenerRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterChannelListenerResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /api/v1/namespaces/{namespace}/channels/{channel}/listeners/{listenerId}:
+    delete:
+      tags:
+        - WorkflowService
+      description: |-
+        UnregisterChannelListener removes a listener from a channel.
+
+         (-- api-linter: core::0136::http-method=disabled
+             aip.dev/not-precedent: Removing a listener is a delete of that listener. --)
+      operationId: UnregisterChannelListener
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: listenerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: identity
+          in: query
+          description: The identity of the caller, for metrics and logs.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnregisterChannelListenerResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /api/v1/namespaces/{namespace}/channels/{channel}/notifications:
+    get:
+      tags:
+        - WorkflowService
+      description: |-
+        PollChannel is a long poll for clients. It returns the retained
+         notifications of a channel with a counter above `after_counter`, waiting
+         up to `wait` for one when none is retained yet.
+      operationId: PollChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: afterCounter
+          in: query
+          description: |-
+            Only notifications with a counter above this one are returned.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "after" names the exclusive lower bound. --)
+          schema:
+            type: string
+        - name: wait
+          in: query
+          description: |-
+            How long to wait for a notification when none is retained above
+             `after_counter`.
+          schema:
+            pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+            type: string
+            description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+        - name: maxNotifications
+          in: query
+          description: |-
+            At most this many notifications are returned. Zero means the server's
+             default.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollChannelResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /api/v1/namespaces/{namespace}/channels/{notification.channel}/notify:
+    post:
+      tags:
+        - WorkflowService
+      description: |-
+        NotifyChannel tells every listener of a channel that a source they consume
+         has moved. The writer names no addressee and never learns who listens. The
+         server wakes each listener: a Workflow with a Workflow Task, a callback by
+         invoking it. Nothing goes to History except the notifications a woken
+         Workflow Task carries on its scheduled event.
+      operationId: NotifyChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: notification.channel
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyChannelRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyChannelResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
   /api/v1/namespaces/{namespace}/current-deployment/{deployment.series_name}:
     post:
       tags:
@@ -4688,6 +4902,9 @@ paths:
          no event, carries no payload, and folds with other wakes for the same
          source, so a burst of writes costs one task. The Workflow learns the
          source and its position from the task and reads the source itself.
+
+         Superseded by the notification channel (`NotifyChannel` and the
+         `SubscribeNotificationChannel` command). Kept for one round and slated for removal.
       operationId: WakeWorkflowExecution
       parameters:
         - name: namespace
@@ -6433,6 +6650,220 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StopBatchOperationResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /namespaces/{namespace}/channels/{channel}:
+    get:
+      tags:
+        - WorkflowService
+      description: |-
+        DescribeChannel returns the listeners of a channel and its latest
+         notification.
+      operationId: DescribeChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeChannelResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /namespaces/{namespace}/channels/{channel}/listeners:
+    post:
+      tags:
+        - WorkflowService
+      description: |-
+        RegisterChannelListener registers a callback as a listener of a channel. A
+         Workflow registers itself with the `SubscribeNotificationChannel` command
+         instead.
+      operationId: RegisterChannelListener
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterChannelListenerRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterChannelListenerResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /namespaces/{namespace}/channels/{channel}/listeners/{listenerId}:
+    delete:
+      tags:
+        - WorkflowService
+      description: |-
+        UnregisterChannelListener removes a listener from a channel.
+
+         (-- api-linter: core::0136::http-method=disabled
+             aip.dev/not-precedent: Removing a listener is a delete of that listener. --)
+      operationId: UnregisterChannelListener
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: listenerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: identity
+          in: query
+          description: The identity of the caller, for metrics and logs.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnregisterChannelListenerResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /namespaces/{namespace}/channels/{channel}/notifications:
+    get:
+      tags:
+        - WorkflowService
+      description: |-
+        PollChannel is a long poll for clients. It returns the retained
+         notifications of a channel with a counter above `after_counter`, waiting
+         up to `wait` for one when none is retained yet.
+      operationId: PollChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: afterCounter
+          in: query
+          description: |-
+            Only notifications with a counter above this one are returned.
+             (-- api-linter: core::0140::prepositions=disabled
+                 aip.dev/not-precedent: "after" names the exclusive lower bound. --)
+          schema:
+            type: string
+        - name: wait
+          in: query
+          description: |-
+            How long to wait for a notification when none is retained above
+             `after_counter`.
+          schema:
+            pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+            type: string
+            description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+        - name: maxNotifications
+          in: query
+          description: |-
+            At most this many notifications are returned. Zero means the server's
+             default.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollChannelResponse'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /namespaces/{namespace}/channels/{notification.channel}/notify:
+    post:
+      tags:
+        - WorkflowService
+      description: |-
+        NotifyChannel tells every listener of a channel that a source they consume
+         has moved. The writer names no addressee and never learns who listens. The
+         server wakes each listener: a Workflow with a Workflow Task, a callback by
+         invoking it. Nothing goes to History except the notifications a woken
+         Workflow Task carries on its scheduled event.
+      operationId: NotifyChannel
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: notification.channel
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyChannelRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyChannelResponse'
         default:
           description: Default error response
           content:
@@ -9752,6 +10183,9 @@ paths:
          no event, carries no payload, and folds with other wakes for the same
          source, so a burst of writes costs one task. The Workflow learns the
          source and its position from the task and reads the source itself.
+
+         Superseded by the notification channel (`NotifyChannel` and the
+         `SubscribeNotificationChannel` command). Kept for one round and slated for removal.
       operationId: WakeWorkflowExecution
       parameters:
         - name: namespace
@@ -11038,6 +11472,22 @@ components:
         identity:
           type: string
           description: The identity of the worker or client that requested the cancellation.
+    ChannelListener:
+      type: object
+      properties:
+        listenerId:
+          type: string
+          description: Assigned by the server when the listener registers.
+        workflow:
+          $ref: '#/components/schemas/WorkflowListener'
+        callback:
+          $ref: '#/components/schemas/Callback'
+        registeredTime:
+          type: string
+          format: date-time
+      description: |-
+        A listener of a channel: a Workflow Execution woken with a Workflow Task, or
+         a callback the server invokes with each notification.
     ChildWorkflowExecutionCanceledEventAttributes:
       type: object
       properties:
@@ -11949,6 +12399,21 @@ components:
           items:
             $ref: '#/components/schemas/Execution'
           description: Executions is the list of workflow OR standalone activity executions to apply the batch operation
+    DescribeChannelResponse:
+      type: object
+      properties:
+        listeners:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelListener'
+        latest:
+          allOf:
+            - $ref: '#/components/schemas/Notification'
+          description: The notification with the highest counter the channel retains.
+        retainedCount:
+          type: integer
+          description: How many notifications the channel retains for pollers.
+          format: int32
     DescribeDeploymentResponse:
       type: object
       properties:
@@ -12962,6 +13427,7 @@ components:
             - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED
             - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED
             - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED
+            - EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED
           type: string
           format: enum
         version:
@@ -13131,6 +13597,8 @@ components:
           $ref: '#/components/schemas/WorkflowStreamSubscribedEventAttributes'
         workflowStreamRecordsAppendedEventAttributes:
           $ref: '#/components/schemas/WorkflowStreamRecordsAppendedEventAttributes'
+        workflowNotificationChannelSubscribedEventAttributes:
+          $ref: '#/components/schemas/WorkflowNotificationChannelSubscribedEventAttributes'
       description: |-
         History events are the method by which Temporal SDKs advance (or recreate) workflow state.
          See the `EventType` enum for more info about what each event is for.
@@ -14328,6 +14796,60 @@ components:
           type: string
           description: The request ID allocated at schedule time.
       description: Nexus operation timed out.
+    Notification:
+      type: object
+      properties:
+        channel:
+          type: string
+          description: The channel the writer notified. Listeners register on the same name.
+        position:
+          type: string
+          description: |-
+            Where the source stands after the write that caused this notification,
+             in the writer's terms. Opaque to the server.
+          format: bytes
+        counter:
+          type: string
+          description: |-
+            Orders notifications from one channel's writers. The writer derives it
+             from the position, since only the source can order its positions. Among
+             notifications folded together, the one with the highest counter is kept.
+        metadata:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Payload'
+          description: |-
+            Details for the listener, such as which topic moved. Bounded in size and
+             carried as payloads, so a codec applies as to any payload.
+      description: |-
+        A notification tells the listeners of a channel that a source they consume
+         has moved. It is not data: the listener reads the source itself. A channel
+         is named by the writer and its listeners; for a stream, the provider formats
+         the stream's identity into the name. Writers never learn who listens. The
+         server folds notifications per listener while one is pending and no task has
+         been scheduled for it, keeping the one with the highest counter.
+    NotifyChannelRequest:
+      type: object
+      properties:
+        namespace:
+          type: string
+        notification:
+          $ref: '#/components/schemas/Notification'
+        identity:
+          type: string
+          description: The identity of the writer, for metrics and logs.
+        requestId:
+          type: string
+          description: Used to de-dupe a retried notification.
+    NotifyChannelResponse:
+      type: object
+      properties:
+        listenerCount:
+          type: integer
+          description: |-
+            Listeners registered when the notification was accepted. Zero means the
+             notification was retained for pollers and woke nobody.
+          format: int32
     OnConflictOptions:
       type: object
       properties:
@@ -14775,6 +15297,13 @@ components:
           description: The run ID of the activity, useful when run_id was not specified in the request.
         outcome:
           $ref: '#/components/schemas/ActivityExecutionOutcome'
+    PollChannelResponse:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
     PollNexusOperationExecutionResponse:
       type: object
       properties:
@@ -15353,6 +15882,28 @@ components:
     RecordWorkerHeartbeatResponse:
       type: object
       properties: {}
+    RegisterChannelListenerRequest:
+      type: object
+      properties:
+        namespace:
+          type: string
+        channel:
+          type: string
+        callback:
+          allOf:
+            - $ref: '#/components/schemas/Callback'
+          description: Invoked with each notification on the channel.
+        requestId:
+          type: string
+          description: Used to de-dupe a retried registration.
+        identity:
+          type: string
+          description: The identity of the caller, for metrics and logs.
+    RegisterChannelListenerResponse:
+      type: object
+      properties:
+        listenerId:
+          type: string
     RegisterNamespaceRequest:
       type: object
       properties:
@@ -15635,6 +16186,7 @@ components:
             - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED
             - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED
             - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED
+            - EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED
           type: string
           description: The event type of the history event generated by the request.
           format: enum
@@ -18590,6 +19142,9 @@ components:
       type: object
       properties: {}
       description: Response to a successful UnpauseWorkflowExecution request.
+    UnregisterChannelListenerResponse:
+      type: object
+      properties: {}
     UpdateActivityExecutionOptionsRequest:
       type: object
       properties:
@@ -19386,6 +19941,10 @@ components:
          pending and no task has received it yet, so a burst of writes costs one
          task. Once a task has been handed the wake, a new wake for the source is
          accepted again, because only the receiver knows what it read.
+
+         Superseded by the notification channel (`NotifyChannel` and the
+         `SubscribeNotificationChannel` command). Kept for one round and slated for
+         removal.
     WakeWorkflowExecutionRequest:
       type: object
       properties:
@@ -20120,6 +20679,7 @@ components:
             - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED
             - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED
             - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED
+            - EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED
           type: string
           format: enum
       description: EventReference is a direct reference to a history event through the event ID.
@@ -20193,6 +20753,7 @@ components:
             - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED
             - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED
             - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED
+            - EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED
           type: string
           format: enum
       description: RequestIdReference is a indirect reference to a history event through the request ID.
@@ -21178,6 +21739,28 @@ components:
       description: |-
         Holds all the information about worker versioning for a particular workflow execution.
          Experimental. Versioning info is experimental and might change in the future.
+    WorkflowListener:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        runId:
+          type: string
+          description: |-
+            The run that subscribed. The server follows a continue-as-new to the
+             chain's current run when it delivers.
+      description: A Workflow Execution listening on a channel.
+    WorkflowNotificationChannelSubscribedEventAttributes:
+      type: object
+      properties:
+        workflowTaskCompletedEventId:
+          type: string
+          description: |-
+            The WorkflowTaskCompleted event of the task whose command created this
+             subscription.
+        channel:
+          type: string
+          description: The channel the Workflow listens on for the rest of this run.
     WorkflowPropertiesModifiedEventAttributes:
       type: object
       properties:
@@ -21607,6 +22190,14 @@ components:
           type: integer
           description: Starting at 1, how many attempts there have been to complete this task
           format: int32
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+          description: |-
+            Notifications for channels this Workflow listens to, folded per channel
+             since the last task was scheduled. In History so a Workflow may act on
+             them deterministically and replay sees the same.
     WorkflowTaskStartedEventAttributes:
       type: object
       properties:

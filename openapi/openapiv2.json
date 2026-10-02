@@ -1449,6 +1449,244 @@
         ]
       }
     },
+    "/api/v1/namespaces/{namespace}/channels/{channel}": {
+      "get": {
+        "summary": "DescribeChannel returns the listeners of a channel and its latest\nnotification.",
+        "operationId": "DescribeChannel2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DescribeChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/channels/{channel}/listeners": {
+      "post": {
+        "summary": "RegisterChannelListener registers a callback as a listener of a channel. A\nWorkflow registers itself with the `SubscribeNotificationChannel` command\ninstead.",
+        "operationId": "RegisterChannelListener2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceRegisterChannelListenerBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/channels/{channel}/listeners/{listenerId}": {
+      "delete": {
+        "summary": "UnregisterChannelListener removes a listener from a channel.",
+        "operationId": "UnregisterChannelListener2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnregisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "identity",
+            "description": "The identity of the caller, for metrics and logs.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/channels/{channel}/notifications": {
+      "get": {
+        "summary": "PollChannel is a long poll for clients. It returns the retained\nnotifications of a channel with a counter above `after_counter`, waiting\nup to `wait` for one when none is retained yet.",
+        "operationId": "PollChannel2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PollChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "afterCounter",
+            "description": "Only notifications with a counter above this one are returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "wait",
+            "description": "How long to wait for a notification when none is retained above\n`after_counter`.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxNotifications",
+            "description": "At most this many notifications are returned. Zero means the server's\ndefault.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/channels/{notification.channel}/notify": {
+      "post": {
+        "summary": "NotifyChannel tells every listener of a channel that a source they consume\nhas moved. The writer names no addressee and never learns who listens. The\nserver wakes each listener: a Workflow with a Workflow Task, a callback by\ninvoking it. Nothing goes to History except the notifications a woken\nWorkflow Task carries on its scheduled event.",
+        "operationId": "NotifyChannel2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotifyChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "notification.channel",
+            "description": "The channel the writer notified. Listeners register on the same name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceNotifyChannelBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
     "/api/v1/namespaces/{namespace}/current-deployment/{deployment.seriesName}": {
       "post": {
         "summary": "Sets a deployment as the current deployment for its deployment series. Can optionally update\nthe metadata of the deployment as well.\nDeprecated. Replaced by `SetWorkerDeploymentCurrentVersion`.",
@@ -4578,6 +4816,7 @@
     "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/wake": {
       "post": {
         "summary": "WakeWorkflowExecution asks a running Workflow Execution to run a Workflow\nTask because a source it consumes has moved. Unlike a Signal it records\nno event, carries no payload, and folds with other wakes for the same\nsource, so a burst of writes costs one task. The Workflow learns the\nsource and its position from the task and reads the source itself.",
+        "description": "Superseded by the notification channel (`NotifyChannel` and the\n`SubscribeNotificationChannel` command). Kept for one round and slated for removal.",
         "operationId": "WakeWorkflowExecution2",
         "responses": {
           "200": {
@@ -7139,6 +7378,244 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/WorkflowServiceStopBatchOperationBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/channels/{channel}": {
+      "get": {
+        "summary": "DescribeChannel returns the listeners of a channel and its latest\nnotification.",
+        "operationId": "DescribeChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DescribeChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/channels/{channel}/listeners": {
+      "post": {
+        "summary": "RegisterChannelListener registers a callback as a listener of a channel. A\nWorkflow registers itself with the `SubscribeNotificationChannel` command\ninstead.",
+        "operationId": "RegisterChannelListener",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceRegisterChannelListenerBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/channels/{channel}/listeners/{listenerId}": {
+      "delete": {
+        "summary": "UnregisterChannelListener removes a listener from a channel.",
+        "operationId": "UnregisterChannelListener",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnregisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "identity",
+            "description": "The identity of the caller, for metrics and logs.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/channels/{channel}/notifications": {
+      "get": {
+        "summary": "PollChannel is a long poll for clients. It returns the retained\nnotifications of a channel with a counter above `after_counter`, waiting\nup to `wait` for one when none is retained yet.",
+        "operationId": "PollChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PollChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "afterCounter",
+            "description": "Only notifications with a counter above this one are returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "wait",
+            "description": "How long to wait for a notification when none is retained above\n`after_counter`.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxNotifications",
+            "description": "At most this many notifications are returned. Zero means the server's\ndefault.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/channels/{notification.channel}/notify": {
+      "post": {
+        "summary": "NotifyChannel tells every listener of a channel that a source they consume\nhas moved. The writer names no addressee and never learns who listens. The\nserver wakes each listener: a Workflow with a Workflow Task, a callback by\ninvoking it. Nothing goes to History except the notifications a woken\nWorkflow Task carries on its scheduled event.",
+        "operationId": "NotifyChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotifyChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "notification.channel",
+            "description": "The channel the writer notified. Listeners register on the same name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceNotifyChannelBody"
             }
           }
         ],
@@ -10206,6 +10683,7 @@
     "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/wake": {
       "post": {
         "summary": "WakeWorkflowExecution asks a running Workflow Execution to run a Workflow\nTask because a source it consumes has moved. Unlike a Signal it records\nno event, carries no payload, and folds with other wakes for the same\nsource, so a burst of writes costs one task. The Workflow learns the\nsource and its position from the task and reads the source itself.",
+        "description": "Superseded by the notification channel (`NotifyChannel` and the\n`SubscribeNotificationChannel` command). Kept for one round and slated for removal.",
         "operationId": "WakeWorkflowExecution",
         "responses": {
           "200": {
@@ -11799,6 +12277,42 @@
         }
       }
     },
+    "WorkflowServiceNotifyChannelBody": {
+      "type": "object",
+      "properties": {
+        "notification": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "string",
+              "format": "byte",
+              "description": "Where the source stands after the write that caused this notification,\nin the writer's terms. Opaque to the server."
+            },
+            "counter": {
+              "type": "string",
+              "format": "int64",
+              "description": "Orders notifications from one channel's writers. The writer derives it\nfrom the position, since only the source can order its positions. Among\nnotifications folded together, the one with the highest counter is kept."
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/v1Payload"
+              },
+              "description": "Details for the listener, such as which topic moved. Bounded in size and\ncarried as payloads, so a codec applies as to any payload."
+            }
+          },
+          "description": "A notification tells the listeners of a channel that a source they consume\nhas moved. It is not data: the listener reads the source itself. A channel\nis named by the writer and its listeners; for a stream, the provider formats\nthe stream's identity into the name. Writers never learn who listens. The\nserver folds notifications per listener while one is pending and no task has\nbeen scheduled for it, keeping the one with the highest counter."
+        },
+        "identity": {
+          "type": "string",
+          "description": "The identity of the writer, for metrics and logs."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "Used to de-dupe a retried notification."
+        }
+      }
+    },
     "WorkflowServicePatchScheduleBody": {
       "type": "object",
       "properties": {
@@ -11984,6 +12498,23 @@
         "resourceId": {
           "type": "string",
           "description": "Resource ID for routing. Contains the worker grouping key."
+        }
+      }
+    },
+    "WorkflowServiceRegisterChannelListenerBody": {
+      "type": "object",
+      "properties": {
+        "callback": {
+          "$ref": "#/definitions/commonV1Callback",
+          "description": "Invoked with each notification on the channel."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "Used to de-dupe a retried registration."
+        },
+        "identity": {
+          "type": "string",
+          "description": "The identity of the caller, for metrics and logs."
         }
       }
     },
@@ -14952,6 +15483,26 @@
         }
       }
     },
+    "v1ChannelListener": {
+      "type": "object",
+      "properties": {
+        "listenerId": {
+          "type": "string",
+          "description": "Assigned by the server when the listener registers."
+        },
+        "workflow": {
+          "$ref": "#/definitions/v1WorkflowListener"
+        },
+        "callback": {
+          "$ref": "#/definitions/commonV1Callback"
+        },
+        "registeredTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "A listener of a channel: a Workflow Execution woken with a Workflow Task, or\na callback the server invokes with each notification."
+    },
     "v1ChildWorkflowExecutionCanceledEventAttributes": {
       "type": "object",
       "properties": {
@@ -15781,6 +16332,27 @@
         }
       }
     },
+    "v1DescribeChannelResponse": {
+      "type": "object",
+      "properties": {
+        "listeners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChannelListener"
+          }
+        },
+        "latest": {
+          "$ref": "#/definitions/v1Notification",
+          "description": "The notification with the highest counter the channel retains."
+        },
+        "retainedCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "How many notifications the channel retains for pollers."
+        }
+      }
+    },
     "v1DescribeDeploymentResponse": {
       "type": "object",
       "properties": {
@@ -16229,10 +16801,11 @@
         "EVENT_TYPE_WORKFLOW_EXECUTION_UNPAUSED",
         "EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED",
         "EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED",
-        "EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED"
+        "EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED",
+        "EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED"
       ],
       "default": "EVENT_TYPE_UNSPECIFIED",
-      "description": "- EVENT_TYPE_UNSPECIFIED: Place holder and should never appear in a Workflow execution history\n - EVENT_TYPE_WORKFLOW_EXECUTION_STARTED: Workflow execution has been triggered/started\nIt contains Workflow execution inputs, as well as Workflow timeout configurations\n - EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED: Workflow execution has successfully completed and contains Workflow execution results\n - EVENT_TYPE_WORKFLOW_EXECUTION_FAILED: Workflow execution has unsuccessfully completed and contains the Workflow execution error\n - EVENT_TYPE_WORKFLOW_EXECUTION_TIMED_OUT: Workflow execution has timed out by the Temporal Server\nUsually due to the Workflow having not been completed within timeout settings\n - EVENT_TYPE_WORKFLOW_TASK_SCHEDULED: Workflow Task has been scheduled and the SDK client should now be able to process any new history events\n - EVENT_TYPE_WORKFLOW_TASK_STARTED: Workflow Task has started and the SDK client has picked up the Workflow Task and is processing new history events\n - EVENT_TYPE_WORKFLOW_TASK_COMPLETED: Workflow Task has completed\nThe SDK client picked up the Workflow Task and processed new history events\nSDK client may or may not ask the Temporal Server to do additional work, such as:\nEVENT_TYPE_ACTIVITY_TASK_SCHEDULED\nEVENT_TYPE_TIMER_STARTED\nEVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES\nEVENT_TYPE_MARKER_RECORDED\nEVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED\nEVENT_TYPE_WORKFLOW_EXECUTION_FAILED\nEVENT_TYPE_WORKFLOW_EXECUTION_CANCELED\nEVENT_TYPE_WORKFLOW_EXECUTION_CONTINUED_AS_NEW\n - EVENT_TYPE_WORKFLOW_TASK_TIMED_OUT: Workflow Task encountered a timeout\nEither an SDK client with a local cache was not available at the time, or it took too long for the SDK client to process the task\n - EVENT_TYPE_WORKFLOW_TASK_FAILED: Workflow Task encountered a failure\nUsually this means that the Workflow was non-deterministic\nHowever, the Workflow reset functionality also uses this event\n - EVENT_TYPE_ACTIVITY_TASK_SCHEDULED: Activity Task was scheduled\nThe SDK client should pick up this activity task and execute\nThis event type contains activity inputs, as well as activity timeout configurations\n - EVENT_TYPE_ACTIVITY_TASK_STARTED: Activity Task has started executing\nThe SDK client has picked up the Activity Task and is processing the Activity invocation\n - EVENT_TYPE_ACTIVITY_TASK_COMPLETED: Activity Task has finished successfully\nThe SDK client has picked up and successfully completed the Activity Task\nThis event type contains Activity execution results\n - EVENT_TYPE_ACTIVITY_TASK_FAILED: Activity Task has finished unsuccessfully\nThe SDK picked up the Activity Task but unsuccessfully completed it\nThis event type contains Activity execution errors\n - EVENT_TYPE_ACTIVITY_TASK_TIMED_OUT: Activity has timed out according to the Temporal Server\nActivity did not complete within the timeout settings\n - EVENT_TYPE_ACTIVITY_TASK_CANCEL_REQUESTED: A request to cancel the Activity has occurred\nThe SDK client will be able to confirm cancellation of an Activity during an Activity heartbeat\n - EVENT_TYPE_ACTIVITY_TASK_CANCELED: Activity has been cancelled\n - EVENT_TYPE_TIMER_STARTED: A timer has started\n - EVENT_TYPE_TIMER_FIRED: A timer has fired\n - EVENT_TYPE_TIMER_CANCELED: A time has been cancelled\n - EVENT_TYPE_WORKFLOW_EXECUTION_CANCEL_REQUESTED: A request has been made to cancel the Workflow execution\n - EVENT_TYPE_WORKFLOW_EXECUTION_CANCELED: SDK client has confirmed the cancellation request and the Workflow execution has been cancelled\n - EVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED: Workflow has requested that the Temporal Server try to cancel another Workflow\n - EVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_FAILED: Temporal Server could not cancel the targeted Workflow\nThis is usually because the target Workflow could not be found\n - EVENT_TYPE_EXTERNAL_WORKFLOW_EXECUTION_CANCEL_REQUESTED: Temporal Server has successfully requested the cancellation of the target Workflow\n - EVENT_TYPE_MARKER_RECORDED: A marker has been recorded.\nThis event type is transparent to the Temporal Server\nThe Server will only store it and will not try to understand it.\n - EVENT_TYPE_WORKFLOW_EXECUTION_SIGNALED: Workflow has received a Signal event\nThe event type contains the Signal name, as well as a Signal payload\n - EVENT_TYPE_WORKFLOW_EXECUTION_TERMINATED: Workflow execution has been forcefully terminated\nThis is usually because the terminate Workflow API was called\n - EVENT_TYPE_WORKFLOW_EXECUTION_CONTINUED_AS_NEW: Workflow has successfully completed and a new Workflow has been started within the same transaction\nContains last Workflow execution results as well as new Workflow execution inputs\n - EVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_INITIATED: Temporal Server will try to start a child Workflow\n - EVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_FAILED: Child Workflow execution cannot be started/triggered\nUsually due to a child Workflow ID collision\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_STARTED: Child Workflow execution has successfully started/triggered\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_COMPLETED: Child Workflow execution has successfully completed\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_FAILED: Child Workflow execution has unsuccessfully completed\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_CANCELED: Child Workflow execution has been cancelled\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_TIMED_OUT: Child Workflow execution has timed out by the Temporal Server\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_TERMINATED: Child Workflow execution has been terminated\n - EVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED: Temporal Server will try to Signal the targeted Workflow\nContains the Signal name, as well as a Signal payload\n - EVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_FAILED: Temporal Server cannot Signal the targeted Workflow\nUsually because the Workflow could not be found\n - EVENT_TYPE_EXTERNAL_WORKFLOW_EXECUTION_SIGNALED: Temporal Server has successfully Signaled the targeted Workflow\n - EVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES: Workflow search attributes should be updated and synchronized with the visibility store\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_ADMITTED: An update was admitted. Note that not all admitted updates result in this\nevent. See UpdateAdmittedEventOrigin for situations in which this event\nis created.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_ACCEPTED: An update was accepted (i.e. passed validation, perhaps because no validator was defined)\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_REJECTED: This event is never written to history.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_COMPLETED: An update completed\n - EVENT_TYPE_WORKFLOW_PROPERTIES_MODIFIED_EXTERNALLY: Some property or properties of the workflow as a whole have changed by non-workflow code.\nThe distinction of external vs. command-based modification is important so the SDK can\nmaintain determinism when using the command-based approach.\n - EVENT_TYPE_ACTIVITY_PROPERTIES_MODIFIED_EXTERNALLY: Some property or properties of an already-scheduled activity have changed by non-workflow code.\nThe distinction of external vs. command-based modification is important so the SDK can\nmaintain determinism when using the command-based approach.\n - EVENT_TYPE_WORKFLOW_PROPERTIES_MODIFIED: Workflow properties modified by user workflow code\n - EVENT_TYPE_NEXUS_OPERATION_SCHEDULED: A Nexus operation was scheduled using a ScheduleNexusOperation command.\n - EVENT_TYPE_NEXUS_OPERATION_STARTED: An asynchronous Nexus operation was started by a Nexus handler.\n - EVENT_TYPE_NEXUS_OPERATION_COMPLETED: A Nexus operation completed successfully.\n - EVENT_TYPE_NEXUS_OPERATION_FAILED: A Nexus operation failed.\n - EVENT_TYPE_NEXUS_OPERATION_CANCELED: A Nexus operation completed as canceled.\n - EVENT_TYPE_NEXUS_OPERATION_TIMED_OUT: A Nexus operation timed out.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUESTED: A Nexus operation was requested to be canceled using a RequestCancelNexusOperation command.\n - EVENT_TYPE_WORKFLOW_EXECUTION_OPTIONS_UPDATED: Workflow execution options updated by user.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUEST_COMPLETED: A cancellation request for a Nexus operation was successfully delivered to the Nexus handler.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUEST_FAILED: A cancellation request for a Nexus operation resulted in an error.\n - EVENT_TYPE_WORKFLOW_EXECUTION_PAUSED: An event that indicates that the workflow execution has been paused.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UNPAUSED: An event that indicates that the previously paused workflow execution has been unpaused.\n - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED: An event that indicates time skipping advanced time or was disabled automatically after a bound was reached.\n - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED: A Workflow subscribed to a stream. Recorded once per subscription, not\nper record: the offsets a task consumed ride WorkflowTaskCompleted and\nthe payloads never enter History at all.\n - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED: A Workflow appended a batch of records to a stream. Recorded per\nbatch, and carrying only the offset range it landed at: the bodies go to\nthe stream's own log, never into History.",
+      "description": "- EVENT_TYPE_UNSPECIFIED: Place holder and should never appear in a Workflow execution history\n - EVENT_TYPE_WORKFLOW_EXECUTION_STARTED: Workflow execution has been triggered/started\nIt contains Workflow execution inputs, as well as Workflow timeout configurations\n - EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED: Workflow execution has successfully completed and contains Workflow execution results\n - EVENT_TYPE_WORKFLOW_EXECUTION_FAILED: Workflow execution has unsuccessfully completed and contains the Workflow execution error\n - EVENT_TYPE_WORKFLOW_EXECUTION_TIMED_OUT: Workflow execution has timed out by the Temporal Server\nUsually due to the Workflow having not been completed within timeout settings\n - EVENT_TYPE_WORKFLOW_TASK_SCHEDULED: Workflow Task has been scheduled and the SDK client should now be able to process any new history events\n - EVENT_TYPE_WORKFLOW_TASK_STARTED: Workflow Task has started and the SDK client has picked up the Workflow Task and is processing new history events\n - EVENT_TYPE_WORKFLOW_TASK_COMPLETED: Workflow Task has completed\nThe SDK client picked up the Workflow Task and processed new history events\nSDK client may or may not ask the Temporal Server to do additional work, such as:\nEVENT_TYPE_ACTIVITY_TASK_SCHEDULED\nEVENT_TYPE_TIMER_STARTED\nEVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES\nEVENT_TYPE_MARKER_RECORDED\nEVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED\nEVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED\nEVENT_TYPE_WORKFLOW_EXECUTION_FAILED\nEVENT_TYPE_WORKFLOW_EXECUTION_CANCELED\nEVENT_TYPE_WORKFLOW_EXECUTION_CONTINUED_AS_NEW\n - EVENT_TYPE_WORKFLOW_TASK_TIMED_OUT: Workflow Task encountered a timeout\nEither an SDK client with a local cache was not available at the time, or it took too long for the SDK client to process the task\n - EVENT_TYPE_WORKFLOW_TASK_FAILED: Workflow Task encountered a failure\nUsually this means that the Workflow was non-deterministic\nHowever, the Workflow reset functionality also uses this event\n - EVENT_TYPE_ACTIVITY_TASK_SCHEDULED: Activity Task was scheduled\nThe SDK client should pick up this activity task and execute\nThis event type contains activity inputs, as well as activity timeout configurations\n - EVENT_TYPE_ACTIVITY_TASK_STARTED: Activity Task has started executing\nThe SDK client has picked up the Activity Task and is processing the Activity invocation\n - EVENT_TYPE_ACTIVITY_TASK_COMPLETED: Activity Task has finished successfully\nThe SDK client has picked up and successfully completed the Activity Task\nThis event type contains Activity execution results\n - EVENT_TYPE_ACTIVITY_TASK_FAILED: Activity Task has finished unsuccessfully\nThe SDK picked up the Activity Task but unsuccessfully completed it\nThis event type contains Activity execution errors\n - EVENT_TYPE_ACTIVITY_TASK_TIMED_OUT: Activity has timed out according to the Temporal Server\nActivity did not complete within the timeout settings\n - EVENT_TYPE_ACTIVITY_TASK_CANCEL_REQUESTED: A request to cancel the Activity has occurred\nThe SDK client will be able to confirm cancellation of an Activity during an Activity heartbeat\n - EVENT_TYPE_ACTIVITY_TASK_CANCELED: Activity has been cancelled\n - EVENT_TYPE_TIMER_STARTED: A timer has started\n - EVENT_TYPE_TIMER_FIRED: A timer has fired\n - EVENT_TYPE_TIMER_CANCELED: A time has been cancelled\n - EVENT_TYPE_WORKFLOW_EXECUTION_CANCEL_REQUESTED: A request has been made to cancel the Workflow execution\n - EVENT_TYPE_WORKFLOW_EXECUTION_CANCELED: SDK client has confirmed the cancellation request and the Workflow execution has been cancelled\n - EVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED: Workflow has requested that the Temporal Server try to cancel another Workflow\n - EVENT_TYPE_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_FAILED: Temporal Server could not cancel the targeted Workflow\nThis is usually because the target Workflow could not be found\n - EVENT_TYPE_EXTERNAL_WORKFLOW_EXECUTION_CANCEL_REQUESTED: Temporal Server has successfully requested the cancellation of the target Workflow\n - EVENT_TYPE_MARKER_RECORDED: A marker has been recorded.\nThis event type is transparent to the Temporal Server\nThe Server will only store it and will not try to understand it.\n - EVENT_TYPE_WORKFLOW_EXECUTION_SIGNALED: Workflow has received a Signal event\nThe event type contains the Signal name, as well as a Signal payload\n - EVENT_TYPE_WORKFLOW_EXECUTION_TERMINATED: Workflow execution has been forcefully terminated\nThis is usually because the terminate Workflow API was called\n - EVENT_TYPE_WORKFLOW_EXECUTION_CONTINUED_AS_NEW: Workflow has successfully completed and a new Workflow has been started within the same transaction\nContains last Workflow execution results as well as new Workflow execution inputs\n - EVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_INITIATED: Temporal Server will try to start a child Workflow\n - EVENT_TYPE_START_CHILD_WORKFLOW_EXECUTION_FAILED: Child Workflow execution cannot be started/triggered\nUsually due to a child Workflow ID collision\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_STARTED: Child Workflow execution has successfully started/triggered\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_COMPLETED: Child Workflow execution has successfully completed\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_FAILED: Child Workflow execution has unsuccessfully completed\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_CANCELED: Child Workflow execution has been cancelled\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_TIMED_OUT: Child Workflow execution has timed out by the Temporal Server\n - EVENT_TYPE_CHILD_WORKFLOW_EXECUTION_TERMINATED: Child Workflow execution has been terminated\n - EVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_INITIATED: Temporal Server will try to Signal the targeted Workflow\nContains the Signal name, as well as a Signal payload\n - EVENT_TYPE_SIGNAL_EXTERNAL_WORKFLOW_EXECUTION_FAILED: Temporal Server cannot Signal the targeted Workflow\nUsually because the Workflow could not be found\n - EVENT_TYPE_EXTERNAL_WORKFLOW_EXECUTION_SIGNALED: Temporal Server has successfully Signaled the targeted Workflow\n - EVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES: Workflow search attributes should be updated and synchronized with the visibility store\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_ADMITTED: An update was admitted. Note that not all admitted updates result in this\nevent. See UpdateAdmittedEventOrigin for situations in which this event\nis created.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_ACCEPTED: An update was accepted (i.e. passed validation, perhaps because no validator was defined)\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_REJECTED: This event is never written to history.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UPDATE_COMPLETED: An update completed\n - EVENT_TYPE_WORKFLOW_PROPERTIES_MODIFIED_EXTERNALLY: Some property or properties of the workflow as a whole have changed by non-workflow code.\nThe distinction of external vs. command-based modification is important so the SDK can\nmaintain determinism when using the command-based approach.\n - EVENT_TYPE_ACTIVITY_PROPERTIES_MODIFIED_EXTERNALLY: Some property or properties of an already-scheduled activity have changed by non-workflow code.\nThe distinction of external vs. command-based modification is important so the SDK can\nmaintain determinism when using the command-based approach.\n - EVENT_TYPE_WORKFLOW_PROPERTIES_MODIFIED: Workflow properties modified by user workflow code\n - EVENT_TYPE_NEXUS_OPERATION_SCHEDULED: A Nexus operation was scheduled using a ScheduleNexusOperation command.\n - EVENT_TYPE_NEXUS_OPERATION_STARTED: An asynchronous Nexus operation was started by a Nexus handler.\n - EVENT_TYPE_NEXUS_OPERATION_COMPLETED: A Nexus operation completed successfully.\n - EVENT_TYPE_NEXUS_OPERATION_FAILED: A Nexus operation failed.\n - EVENT_TYPE_NEXUS_OPERATION_CANCELED: A Nexus operation completed as canceled.\n - EVENT_TYPE_NEXUS_OPERATION_TIMED_OUT: A Nexus operation timed out.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUESTED: A Nexus operation was requested to be canceled using a RequestCancelNexusOperation command.\n - EVENT_TYPE_WORKFLOW_EXECUTION_OPTIONS_UPDATED: Workflow execution options updated by user.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUEST_COMPLETED: A cancellation request for a Nexus operation was successfully delivered to the Nexus handler.\n - EVENT_TYPE_NEXUS_OPERATION_CANCEL_REQUEST_FAILED: A cancellation request for a Nexus operation resulted in an error.\n - EVENT_TYPE_WORKFLOW_EXECUTION_PAUSED: An event that indicates that the workflow execution has been paused.\n - EVENT_TYPE_WORKFLOW_EXECUTION_UNPAUSED: An event that indicates that the previously paused workflow execution has been unpaused.\n - EVENT_TYPE_WORKFLOW_EXECUTION_TIME_SKIPPING_TRANSITIONED: An event that indicates time skipping advanced time or was disabled automatically after a bound was reached.\n - EVENT_TYPE_WORKFLOW_STREAM_SUBSCRIBED: A Workflow subscribed to a stream. Recorded once per subscription, not\nper record: the offsets a task consumed ride WorkflowTaskCompleted and\nthe payloads never enter History at all.\n - EVENT_TYPE_WORKFLOW_STREAM_RECORDS_APPENDED: A Workflow appended a batch of records to a stream. Recorded per\nbatch, and carrying only the offset range it landed at: the bodies go to\nthe stream's own log, never into History.\n - EVENT_TYPE_WORKFLOW_NOTIFICATION_CHANNEL_SUBSCRIBED: A Workflow became a listener of a notification channel for its run.\nThe notifications themselves ride the WorkflowTaskScheduled event.",
       "title": "Whenever this list of events is changed do change the function shouldBufferEvent in mutableStateBuilder.go to make sure to do the correct event ordering"
     },
     "v1Execution": {
@@ -16905,6 +17478,9 @@
         },
         "workflowStreamRecordsAppendedEventAttributes": {
           "$ref": "#/definitions/v1WorkflowStreamRecordsAppendedEventAttributes"
+        },
+        "workflowNotificationChannelSubscribedEventAttributes": {
+          "$ref": "#/definitions/v1WorkflowNotificationChannelSubscribedEventAttributes"
         }
       },
       "description": "History events are the method by which Temporal SDKs advance (or recreate) workflow state.\nSee the `EventType` enum for more info about what each event is for."
@@ -18204,6 +18780,43 @@
       "default": "NEXUS_OPERATION_WAIT_STAGE_UNSPECIFIED",
       "description": "Stage that can be specified when waiting on a nexus operation.\n\n - NEXUS_OPERATION_WAIT_STAGE_STARTED: Wait for the operation to be started.\n - NEXUS_OPERATION_WAIT_STAGE_CLOSED: Wait for the operation to be in a terminal state, either successful or unsuccessful."
     },
+    "v1Notification": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "The channel the writer notified. Listeners register on the same name."
+        },
+        "position": {
+          "type": "string",
+          "format": "byte",
+          "description": "Where the source stands after the write that caused this notification,\nin the writer's terms. Opaque to the server."
+        },
+        "counter": {
+          "type": "string",
+          "format": "int64",
+          "description": "Orders notifications from one channel's writers. The writer derives it\nfrom the position, since only the source can order its positions. Among\nnotifications folded together, the one with the highest counter is kept."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1Payload"
+          },
+          "description": "Details for the listener, such as which topic moved. Bounded in size and\ncarried as payloads, so a codec applies as to any payload."
+        }
+      },
+      "description": "A notification tells the listeners of a channel that a source they consume\nhas moved. It is not data: the listener reads the source itself. A channel\nis named by the writer and its listeners; for a stream, the provider formats\nthe stream's identity into the name. Writers never learn who listens. The\nserver folds notifications per listener while one is pending and no task has\nbeen scheduled for it, keeping the one with the highest counter."
+    },
+    "v1NotifyChannelResponse": {
+      "type": "object",
+      "properties": {
+        "listenerCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Listeners registered when the notification was accepted. Zero means the\nnotification was retained for pollers and woke nobody."
+        }
+      }
+    },
     "v1Outcome": {
       "type": "object",
       "properties": {
@@ -18539,6 +19152,18 @@
         },
         "outcome": {
           "$ref": "#/definitions/v1ActivityExecutionOutcome"
+        }
+      }
+    },
+    "v1PollChannelResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Notification"
+          }
         }
       }
     },
@@ -18943,6 +19568,14 @@
     },
     "v1RecordWorkerHeartbeatResponse": {
       "type": "object"
+    },
+    "v1RegisterChannelListenerResponse": {
+      "type": "object",
+      "properties": {
+        "listenerId": {
+          "type": "string"
+        }
+      }
     },
     "v1RegisterNamespaceRequest": {
       "type": "object",
@@ -20848,6 +21481,9 @@
       "type": "object",
       "description": "Response to a successful UnpauseWorkflowExecution request."
     },
+    "v1UnregisterChannelListenerResponse": {
+      "type": "object"
+    },
     "v1UpdateActivityExecutionOptionsResponse": {
       "type": "object",
       "properties": {
@@ -21203,7 +21839,7 @@
           "description": "Orders wakes from one source, so that folding keeps the latest position.\nOnly the source's store can order its positions, so the sender derives\nthis from the position. It is not a durable identity: a wake sent after\na task received an equal counter is accepted again."
         }
       },
-      "description": "A wake tells a running Workflow Execution that something it consumes has\nmoved, so it should run a Workflow Task and read from its own cursor. It is\na reason to run, not data: nothing is recorded in History and no record\ntravels with it. A store Temporal does not host sends one after the store\nhas acknowledged a write. Wakes for the same source fold while one is\npending and no task has received it yet, so a burst of writes costs one\ntask. Once a task has been handed the wake, a new wake for the source is\naccepted again, because only the receiver knows what it read."
+      "description": "A wake tells a running Workflow Execution that something it consumes has\nmoved, so it should run a Workflow Task and read from its own cursor. It is\na reason to run, not data: nothing is recorded in History and no record\ntravels with it. A store Temporal does not host sends one after the store\nhas acknowledged a write. Wakes for the same source fold while one is\npending and no task has received it yet, so a burst of writes costs one\ntask. Once a task has been handed the wake, a new wake for the source is\naccepted again, because only the receiver knows what it read.\n\nSuperseded by the notification channel (`NotifyChannel` and the\n`SubscribeNotificationChannel` command). Kept for one round and slated for\nremoval."
     },
     "v1WakeWorkflowExecutionResponse": {
       "type": "object",
@@ -22580,6 +23216,33 @@
       "default": "WORKFLOW_ID_REUSE_POLICY_UNSPECIFIED",
       "description": "Defines whether to allow re-using a workflow id from a previously *closed* workflow.\nIf the request is denied, the server returns a `WorkflowExecutionAlreadyStartedFailure` error.\n\nSee `WorkflowIdConflictPolicy` for handling workflow id duplication with a *running* workflow.\n\n - WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE: Allow starting a workflow execution using the same workflow id.\n - WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY: Allow starting a workflow execution using the same workflow id, only when the last\nexecution's final state is one of [terminated, cancelled, timed out, failed].\n - WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE: Do not permit re-use of the workflow id for this workflow. Future start workflow requests\ncould potentially change the policy, allowing re-use of the workflow id.\n - WORKFLOW_ID_REUSE_POLICY_TERMINATE_IF_RUNNING: Terminate the current Workflow if one is already running; otherwise allow reusing the\nWorkflow ID. When using this option, `WorkflowIdConflictPolicy` must be left unspecified.\n\nDeprecated. Instead, set `WorkflowIdReusePolicy` to `ALLOW_DUPLICATE` and\n`WorkflowIdConflictPolicy` to `TERMINATE_EXISTING`. Note that `WorkflowIdConflictPolicy`\nrequires Temporal Server v1.24.0 or later."
     },
+    "v1WorkflowListener": {
+      "type": "object",
+      "properties": {
+        "workflowId": {
+          "type": "string"
+        },
+        "runId": {
+          "type": "string",
+          "description": "The run that subscribed. The server follows a continue-as-new to the\nchain's current run when it delivers."
+        }
+      },
+      "description": "A Workflow Execution listening on a channel."
+    },
+    "v1WorkflowNotificationChannelSubscribedEventAttributes": {
+      "type": "object",
+      "properties": {
+        "workflowTaskCompletedEventId": {
+          "type": "string",
+          "format": "int64",
+          "description": "The WorkflowTaskCompleted event of the task whose command created this\nsubscription."
+        },
+        "channel": {
+          "type": "string",
+          "description": "The channel the Workflow listens on for the rest of this run."
+        }
+      }
+    },
     "v1WorkflowPropertiesModifiedEventAttributes": {
       "type": "object",
       "properties": {
@@ -22947,6 +23610,14 @@
           "type": "integer",
           "format": "int32",
           "title": "Starting at 1, how many attempts there have been to complete this task"
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Notification"
+          },
+          "description": "Notifications for channels this Workflow listens to, folded per channel\nsince the last task was scheduled. In History so a Workflow may act on\nthem deterministically and replay sees the same."
         }
       }
     },
