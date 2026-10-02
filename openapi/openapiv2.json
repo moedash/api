@@ -23839,11 +23839,6 @@
     "v1WorkflowNotificationChannelUnsubscribedEventAttributes": {
       "type": "object",
       "properties": {
-        "workflowTaskCompletedEventId": {
-          "type": "string",
-          "format": "int64",
-          "description": "The WorkflowTaskCompleted event of the task whose command ended this\nsubscription."
-        },
         "channel": {
           "type": "string",
           "description": "The channel the Workflow stopped listening on."
@@ -23852,6 +23847,11 @@
           "type": "string",
           "format": "int64",
           "description": "The WorkflowNotificationChannelSubscribed event that recorded the\nsubscription this command ended. Zero when the run held no subscription\nfor the channel."
+        },
+        "workflowTaskCompletedEventId": {
+          "type": "string",
+          "format": "int64",
+          "description": "The WorkflowTaskCompleted event of the task whose command ended this\nsubscription."
         }
       }
     },

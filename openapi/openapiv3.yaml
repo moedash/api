@@ -22270,11 +22270,6 @@ components:
     WorkflowNotificationChannelUnsubscribedEventAttributes:
       type: object
       properties:
-        workflowTaskCompletedEventId:
-          type: string
-          description: |-
-            The WorkflowTaskCompleted event of the task whose command ended this
-             subscription.
         channel:
           type: string
           description: The channel the Workflow stopped listening on.
@@ -22284,6 +22279,11 @@ components:
             The WorkflowNotificationChannelSubscribed event that recorded the
              subscription this command ended. Zero when the run held no subscription
              for the channel.
+        workflowTaskCompletedEventId:
+          type: string
+          description: |-
+            The WorkflowTaskCompleted event of the task whose command ended this
+             subscription.
     WorkflowPropertiesModifiedEventAttributes:
       type: object
       properties:

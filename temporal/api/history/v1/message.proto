@@ -995,15 +995,15 @@ message WorkflowNotificationChannelSubscribedEventAttributes {
 }
 
 message WorkflowNotificationChannelUnsubscribedEventAttributes {
-    // The WorkflowTaskCompleted event of the task whose command ended this
-    // subscription.
-    int64 workflow_task_completed_event_id = 1;
     // The channel the Workflow stopped listening on.
-    string channel = 2;
+    string channel = 1;
     // The WorkflowNotificationChannelSubscribed event that recorded the
     // subscription this command ended. Zero when the run held no subscription
     // for the channel.
-    int64 subscribed_event_id = 3;
+    int64 subscribed_event_id = 2;
+    // The WorkflowTaskCompleted event of the task whose command ended this
+    // subscription.
+    int64 workflow_task_completed_event_id = 3;
 }
 
 message WorkflowStreamRecordsAppendedEventAttributes {
