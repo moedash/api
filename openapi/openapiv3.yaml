@@ -11974,6 +11974,52 @@ components:
       description: |-
         A listener of a channel: a Workflow Execution woken with a Workflow Task, or
          a callback the server invokes with each notification.
+    ChannelSubscriptionInfo:
+      type: object
+      properties:
+        channel:
+          type: string
+          description: Channel name.
+        kind:
+          enum:
+            - CHANNEL_KIND_UNSPECIFIED
+            - CHANNEL_KIND_INDEPENDENT
+            - CHANNEL_KIND_LINKED
+          type: string
+          description: |-
+            CHANNEL_KIND_INDEPENDENT for a channel the workflow subscribed to with a
+             SubscribeNotificationChannel command. CHANNEL_KIND_LINKED for a channel linked to this
+             workflow, which lists it once the channel holds any state.
+          format: enum
+        subscribedEventId:
+          type: string
+          description: |-
+            Independent kind: id of the WorkflowNotificationChannelSubscribed event that recorded the
+             subscription. Zero for the linked kind.
+        lastCounter:
+          type: string
+          description: Highest counter the workflow has accepted from the channel. Zero when none has arrived.
+        pendingNotification:
+          allOf:
+            - $ref: '#/components/schemas/Notification'
+          description: The notification held for the workflow's next Workflow Task, when one is pending.
+        scheduledCounter:
+          type: string
+          description: |-
+            Counter carried by the scheduled event of a Workflow Task that has not started yet. Zero
+             otherwise.
+        listenerCount:
+          type: integer
+          description: 'Linked kind: callback listeners registered on the channel.'
+          format: int32
+        retainedCount:
+          type: integer
+          description: 'Linked kind: notifications retained for pollers.'
+          format: int32
+        acceptedCount:
+          type: string
+          description: 'Linked kind: notifications the channel has accepted over its life.'
+      description: A workflow's standing on a notification channel, as reported by DescribeWorkflowExecution.
     ChildWorkflowExecutionCanceledEventAttributes:
       type: object
       properties:
@@ -13179,6 +13225,13 @@ components:
             $ref: '#/components/schemas/PendingNexusOperationInfo'
         workflowExtendedInfo:
           $ref: '#/components/schemas/WorkflowExecutionExtendedInfo'
+        channelSubscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelSubscriptionInfo'
+          description: |-
+            The notification channels this run stands on: the independent channels it subscribed to and
+             the channels linked to it that hold any state. Empty when there are none.
     DescribeWorkflowRuleResponse:
       type: object
       properties:
