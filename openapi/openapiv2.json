@@ -1479,6 +1479,18 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1574,6 +1586,18 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1634,6 +1658,18 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -4522,6 +4558,292 @@
         ]
       }
     },
+    "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}": {
+      "get": {
+        "summary": "DescribeChannel returns the listeners of a channel and its latest\nnotification.",
+        "operationId": "DescribeChannel4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DescribeChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/listeners": {
+      "post": {
+        "summary": "RegisterChannelListener registers a callback as a listener of a channel. A\nWorkflow registers itself with the `SubscribeNotificationChannel` command\ninstead.",
+        "operationId": "RegisterChannelListener4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceRegisterChannelListenerBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/listeners/{listenerId}": {
+      "delete": {
+        "summary": "UnregisterChannelListener removes a listener from a channel.",
+        "operationId": "UnregisterChannelListener4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnregisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "identity",
+            "description": "The identity of the caller, for metrics and logs.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/notifications": {
+      "get": {
+        "summary": "PollChannel is a long poll for clients. It returns the retained\nnotifications of a channel with a counter above `after_counter`, waiting\nup to `wait` for one when none is retained yet.",
+        "operationId": "PollChannel4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PollChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "afterCounter",
+            "description": "Only notifications with a counter above this one are returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "wait",
+            "description": "How long to wait for a notification when none is retained above\n`after_counter`.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxNotifications",
+            "description": "At most this many notifications are returned. Zero means the server's\ndefault.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{notification.channel}/notify": {
+      "post": {
+        "summary": "NotifyChannel tells every listener of a channel that a source they consume\nhas moved. The writer names no addressee and never learns who listens. The\nserver wakes each listener: a Workflow with a Workflow Task, a callback by\ninvoking it. Nothing goes to History except the notifications a woken\nWorkflow Task carries on its scheduled event.",
+        "operationId": "NotifyChannel4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotifyChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "notification.channel",
+            "description": "The channel the writer notified. Listeners register on the same name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceNotifyChannelBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
     "/api/v1/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/reset": {
       "post": {
         "summary": "ResetWorkflowExecution will reset an existing workflow execution to a specified\n`WORKFLOW_TASK_COMPLETED` event (exclusive). It will immediately terminate the current\nexecution instance. \"Exclusive\" means the identified completed event itself is not replayed\nin the reset history; the preceding `WORKFLOW_TASK_STARTED` event remains and will be marked as failed\nimmediately, and a new workflow task will be scheduled to retry it.",
@@ -7370,6 +7692,18 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -7465,6 +7799,18 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -7525,6 +7871,18 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -10343,6 +10701,292 @@
         ]
       }
     },
+    "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}": {
+      "get": {
+        "summary": "DescribeChannel returns the listeners of a channel and its latest\nnotification.",
+        "operationId": "DescribeChannel3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DescribeChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/listeners": {
+      "post": {
+        "summary": "RegisterChannelListener registers a callback as a listener of a channel. A\nWorkflow registers itself with the `SubscribeNotificationChannel` command\ninstead.",
+        "operationId": "RegisterChannelListener3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceRegisterChannelListenerBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/listeners/{listenerId}": {
+      "delete": {
+        "summary": "UnregisterChannelListener removes a listener from a channel.",
+        "operationId": "UnregisterChannelListener3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnregisterChannelListenerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "identity",
+            "description": "The identity of the caller, for metrics and logs.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{channel}/notifications": {
+      "get": {
+        "summary": "PollChannel is a long poll for clients. It returns the retained\nnotifications of a channel with a counter above `after_counter`, waiting\nup to `wait` for one when none is retained yet.",
+        "operationId": "PollChannel3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PollChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "afterCounter",
+            "description": "Only notifications with a counter above this one are returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "wait",
+            "description": "How long to wait for a notification when none is retained above\n`after_counter`.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxNotifications",
+            "description": "At most this many notifications are returned. Zero means the server's\ndefault.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "workflowExecution.runId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
+    "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/channels/{notification.channel}/notify": {
+      "post": {
+        "summary": "NotifyChannel tells every listener of a channel that a source they consume\nhas moved. The writer names no addressee and never learns who listens. The\nserver wakes each listener: a Workflow with a Workflow Task, a callback by\ninvoking it. Nothing goes to History except the notifications a woken\nWorkflow Task carries on its scheduled event.",
+        "operationId": "NotifyChannel3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotifyChannelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workflowExecution.workflowId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "notification.channel",
+            "description": "The channel the writer notified. Listeners register on the same name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceNotifyChannelBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
     "/namespaces/{namespace}/workflows/{workflowExecution.workflowId}/reset": {
       "post": {
         "summary": "ResetWorkflowExecution will reset an existing workflow execution to a specified\n`WORKFLOW_TASK_COMPLETED` event (exclusive). It will immediately terminate the current\nexecution instance. \"Exclusive\" means the identified completed event itself is not replayed\nin the reset history; the preceding `WORKFLOW_TASK_STARTED` event remains and will be marked as failed\nimmediately, and a new workflow task will be scheduled to retry it.",
@@ -12207,6 +12851,10 @@
                 "$ref": "#/definitions/v1Payload"
               },
               "description": "Details for the listener, such as which topic moved. Bounded in size and\ncarried as payloads, so a codec applies as to any payload."
+            },
+            "linkedTo": {
+              "$ref": "#/definitions/v1WorkflowExecution",
+              "description": "Set for a channel linked to a workflow: the owner and the run that\nreceived the notification. Empty for an independent channel. A listener\nthat holds both kinds routes the notification by it."
             }
           },
           "description": "A notification tells the listeners of a channel that a source they consume\nhas moved. It is not data: the listener reads the source itself. A channel\nis named by the writer and its listeners; for a stream, the provider formats\nthe stream's identity into the name. Writers never learn who listens. The\nserver folds notifications per listener while one is pending and no task has\nbeen scheduled for it, keeping the one with the highest counter."
@@ -12218,6 +12866,15 @@
         "requestId": {
           "type": "string",
           "description": "Used to de-dupe a retried notification."
+        },
+        "workflowExecution": {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "type": "string"
+            }
+          },
+          "description": "When set, the call addresses the channel linked to this workflow; `run_id`\nis optional and resolves to the chain's current run, as a Signal does.\nWhen unset, the call addresses the independent channel of that name."
         }
       }
     },
@@ -12423,6 +13080,15 @@
         "identity": {
           "type": "string",
           "description": "The identity of the caller, for metrics and logs."
+        },
+        "workflowExecution": {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "type": "string"
+            }
+          },
+          "description": "When set, the call addresses the channel linked to this workflow; `run_id`\nis optional and resolves to the chain's current run, as a Signal does.\nWhen unset, the call addresses the independent channel of that name."
         }
       }
     },
@@ -15370,6 +16036,16 @@
         }
       }
     },
+    "v1ChannelKind": {
+      "type": "string",
+      "enum": [
+        "CHANNEL_KIND_UNSPECIFIED",
+        "CHANNEL_KIND_INDEPENDENT",
+        "CHANNEL_KIND_LINKED"
+      ],
+      "default": "CHANNEL_KIND_UNSPECIFIED",
+      "description": "Where a channel lives, which decides how a call addresses it.\n\n - CHANNEL_KIND_INDEPENDENT: Its own execution, keyed by namespace and channel name. Any number of\nworkflows and callbacks listen to it.\n - CHANNEL_KIND_LINKED: Kept in one workflow's state, keyed by namespace, workflow id and\nchannel name. The owning workflow is its listener by construction."
+    },
     "v1ChannelListener": {
       "type": "object",
       "properties": {
@@ -16237,6 +16913,13 @@
           "type": "integer",
           "format": "int32",
           "description": "How many notifications the channel retains for pollers."
+        },
+        "kind": {
+          "$ref": "#/definitions/v1ChannelKind"
+        },
+        "linkedTo": {
+          "$ref": "#/definitions/v1WorkflowExecution",
+          "description": "The owner of a linked channel and the run that holds it. Empty for an\nindependent channel."
         }
       }
     },
@@ -18690,6 +19373,10 @@
             "$ref": "#/definitions/v1Payload"
           },
           "description": "Details for the listener, such as which topic moved. Bounded in size and\ncarried as payloads, so a codec applies as to any payload."
+        },
+        "linkedTo": {
+          "$ref": "#/definitions/v1WorkflowExecution",
+          "description": "Set for a channel linked to a workflow: the owner and the run that\nreceived the notification. Empty for an independent channel. A listener\nthat holds both kinds routes the notification by it."
         }
       },
       "description": "A notification tells the listeners of a channel that a source they consume\nhas moved. It is not data: the listener reads the source itself. A channel\nis named by the writer and its listeners; for a stream, the provider formats\nthe stream's identity into the name. Writers never learn who listens. The\nserver folds notifications per listener while one is pending and no task has\nbeen scheduled for it, keeping the one with the highest counter."
