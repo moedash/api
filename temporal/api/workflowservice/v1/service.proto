@@ -513,6 +513,10 @@ service WorkflowService {
                 body: "*"
             }
         };
+        option (temporal.api.protometa.v1.request_header) = {
+            header: "temporal-resource-id"
+            value: "channel:{notification.channel}"
+        };
     }
 
     // RegisterChannelListener registers a callback as a listener of a channel. A
@@ -544,6 +548,10 @@ service WorkflowService {
                 body: "*"
             }
         };
+        option (temporal.api.protometa.v1.request_header) = {
+            header: "temporal-resource-id"
+            value: "channel:{channel}"
+        };
     }
 
     // UnregisterChannelListener removes a listener from a channel.
@@ -570,6 +578,10 @@ service WorkflowService {
                 delete: "/api/v1/namespaces/{namespace}/activities/{execution.business_id}/channels/{channel}/listeners/{listener_id}"
             }
         };
+        option (temporal.api.protometa.v1.request_header) = {
+            header: "temporal-resource-id"
+            value: "channel:{channel}"
+        };
     }
 
     // PollChannel is a long poll for clients. It returns the retained
@@ -594,6 +606,10 @@ service WorkflowService {
                 get: "/api/v1/namespaces/{namespace}/activities/{execution.business_id}/channels/{channel}/notifications"
             }
         };
+        option (temporal.api.protometa.v1.request_header) = {
+            header: "temporal-resource-id"
+            value: "channel:{channel}"
+        };
     }
 
     // DescribeChannel returns the listeners of a channel and its latest
@@ -616,6 +632,10 @@ service WorkflowService {
             additional_bindings {
                 get: "/api/v1/namespaces/{namespace}/activities/{execution.business_id}/channels/{channel}"
             }
+        };
+        option (temporal.api.protometa.v1.request_header) = {
+            header: "temporal-resource-id"
+            value: "channel:{channel}"
         };
     }
 
