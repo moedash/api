@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package temporal.api.notification.v1;
+
+option go_package = "go.temporal.io/api/notification/v1;notification";
+option java_package = "io.temporal.api.notification.v1";
+option java_multiple_files = true;
+option java_outer_classname = "MessageProto";
+option ruby_package = "Temporalio::Api::Notification::V1";
+option csharp_namespace = "Temporalio.Api.Notification.V1";
+
+import "temporal/api/common/v1/message.proto";
+
+// A notification tells a Workflow that a source it consumes has moved. It is
+// not data: the Workflow reads the source itself. The server keeps the one with
+// the highest counter per source while no task has been scheduled for it.
+message Notification {
+    // Names the source that moved.
+    string channel = 1;
+    // Where the source stands after the write that caused this notification,
+    // in the writer's terms. Opaque to the server.
+    bytes position = 2;
+    // Orders notifications from one source. Among notifications folded
+    // together, the one with the highest counter is kept.
+    int64 counter = 3;
+    // Small details for the Workflow, carried as payloads so a codec applies.
+    map<string, temporal.api.common.v1.Payload> metadata = 4;
+}

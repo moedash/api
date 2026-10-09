@@ -14256,6 +14256,32 @@ components:
           type: string
           description: The request ID allocated at schedule time.
       description: Nexus operation timed out.
+    Notification:
+      type: object
+      properties:
+        channel:
+          type: string
+          description: Names the source that moved.
+        position:
+          type: string
+          description: |-
+            Where the source stands after the write that caused this notification,
+             in the writer's terms. Opaque to the server.
+          format: bytes
+        counter:
+          type: string
+          description: |-
+            Orders notifications from one source. Among notifications folded
+             together, the one with the highest counter is kept.
+        metadata:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Payload'
+          description: Small details for the Workflow, carried as payloads so a codec applies.
+      description: |-
+        A notification tells a Workflow that a source it consumes has moved. It is
+         not data: the Workflow reads the source itself. The server keeps the one with
+         the highest counter per source while no task has been scheduled for it.
     OnConflictOptions:
       type: object
       properties:
@@ -21353,6 +21379,13 @@ components:
           type: integer
           description: Starting at 1, how many attempts there have been to complete this task
           format: int32
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+          description: |-
+            Notifications folded since the last task was scheduled. In History so a
+             Workflow may act on them deterministically and replay sees the same.
     WorkflowTaskStartedEventAttributes:
       type: object
       properties:

@@ -18107,6 +18107,33 @@
       "default": "NEXUS_OPERATION_WAIT_STAGE_UNSPECIFIED",
       "description": "Stage that can be specified when waiting on a nexus operation.\n\n - NEXUS_OPERATION_WAIT_STAGE_STARTED: Wait for the operation to be started.\n - NEXUS_OPERATION_WAIT_STAGE_CLOSED: Wait for the operation to be in a terminal state, either successful or unsuccessful."
     },
+    "v1Notification": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Names the source that moved."
+        },
+        "position": {
+          "type": "string",
+          "format": "byte",
+          "description": "Where the source stands after the write that caused this notification,\nin the writer's terms. Opaque to the server."
+        },
+        "counter": {
+          "type": "string",
+          "format": "int64",
+          "description": "Orders notifications from one source. Among notifications folded\ntogether, the one with the highest counter is kept."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1Payload"
+          },
+          "description": "Small details for the Workflow, carried as payloads so a codec applies."
+        }
+      },
+      "description": "A notification tells a Workflow that a source it consumes has moved. It is\nnot data: the Workflow reads the source itself. The server keeps the one with\nthe highest counter per source while no task has been scheduled for it."
+    },
     "v1Outcome": {
       "type": "object",
       "properties": {
@@ -22677,6 +22704,14 @@
           "type": "integer",
           "format": "int32",
           "title": "Starting at 1, how many attempts there have been to complete this task"
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Notification"
+          },
+          "description": "Notifications folded since the last task was scheduled. In History so a\nWorkflow may act on them deterministically and replay sees the same."
         }
       }
     },
