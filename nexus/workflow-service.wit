@@ -148,29 +148,26 @@ interface workflow-service {
   record stream-reference {
     owner-kind: option<stream-owner-kind>,
     workflow-id: string,
-    run-id: string,
+    run-id: option<string>,
     topic: string,
-  }
-
-  /// @nexus.proto "temporal.api.common.v1.Callback.Nexus.HeaderEntry"
-  record callback-nexus-header-entry {
-    key: string,
-    value: string,
   }
 
   /// @nexus.proto "temporal.api.common.v1.Callback.Nexus"
   record callback-nexus {
     url: string,
-    header: list<callback-nexus-header-entry>,
+    header: map<string, string>,
   }
 
   /// @nexus.proto "temporal.api.workflowservice.v1.AttachStreamCallbackRequest"
   record attach-stream-callback-request {
+    /// @nexus.source python="workflow_namespace()" typescript="workflowNamespace()" go="workflow.GetInfo(ctx).Namespace" dotnet="TemporalWorkflowContext.WorkflowNamespace()"
+    /// @nexus.doc "Namespace of the stream."
     namespace: string,
     stream-ref: option<stream-reference>,
     request-id: string,
     callback: option<callback-nexus>,
-    identity: string,
+    /// @nexus.omit
+    identity: placeholder,
   }
 
   /// @nexus.proto "temporal.api.workflowservice.v1.AttachStreamCallbackResponse"
@@ -182,10 +179,13 @@ interface workflow-service {
   ) -> attach-stream-callback-response;
   /// @nexus.proto "temporal.api.workflowservice.v1.DetachStreamCallbackRequest"
   record detach-stream-callback-request {
+    /// @nexus.source python="workflow_namespace()" typescript="workflowNamespace()" go="workflow.GetInfo(ctx).Namespace" dotnet="TemporalWorkflowContext.WorkflowNamespace()"
+    /// @nexus.doc "Namespace of the stream."
     namespace: string,
     stream-ref: option<stream-reference>,
     request-id: string,
-    identity: string,
+    /// @nexus.omit
+    identity: placeholder,
   }
 
   /// @nexus.proto "temporal.api.workflowservice.v1.DetachStreamCallbackResponse"
@@ -199,22 +199,19 @@ interface workflow-service {
     payload,
   };
 
-  /// @nexus.proto "temporal.api.workflowservice.v1.NotifyStreamRequest.MetadataEntry"
-  record notify-stream-request-metadata-entry {
-    key: string,
-    value: string,
-  }
-
   /// @nexus.proto "temporal.api.workflowservice.v1.NotifyStreamRequest"
   record notify-stream-request {
+    /// @nexus.source python="workflow_namespace()" typescript="workflowNamespace()" go="workflow.GetInfo(ctx).Namespace" dotnet="TemporalWorkflowContext.WorkflowNamespace()"
+    /// @nexus.doc "Namespace of the stream."
     namespace: string,
     stream-ref: option<stream-reference>,
     position: string,
     counter: option<s64>,
-    metadata: list<notify-stream-request-metadata-entry>,
+    metadata: map<string, string>,
     close: option<bool>,
     close-result: option<payload>,
-    identity: string,
+    /// @nexus.omit
+    identity: placeholder,
   }
 
   /// @nexus.proto "temporal.api.workflowservice.v1.NotifyStreamResponse"
