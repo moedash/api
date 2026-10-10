@@ -38,9 +38,9 @@ OAPI3_PATH := .components.schemas.Payload
 # nexgen escapes WIT keywords in field names and scaffolds proto maps and bytes in the
 # forms its generators accept. Pinned by revision so every machine writes the same WIT.
 NEXGEN_GIT ?= https://github.com/moetemp/nexgen
-NEXGEN_REV ?= cc2b8a7337cf79b0cdcdc2a808ef8c8ae41506ea
+NEXGEN_REV ?= 6f46948678f764c68bb76f103ab43713047187b2
 NEXGEN_ROOT := $(STAMPDIR)/nexgen-$(NEXGEN_REV)
-NEX_GEN ?= $(NEXGEN_ROOT)/bin/nexgen
+NEX_GEN := $(NEXGEN_ROOT)/bin/nexgen
 
 $(PROTO_OUT):
 	mkdir $(PROTO_OUT)
