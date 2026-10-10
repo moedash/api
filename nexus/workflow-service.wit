@@ -202,14 +202,14 @@ interface workflow-service {
   /// @nexus.proto "temporal.api.workflowservice.v1.NotifyStreamRequest.MetadataEntry"
   record notify-stream-request-metadata-entry {
     key: string,
-    value: option<payload>,
+    value: string,
   }
 
   /// @nexus.proto "temporal.api.workflowservice.v1.NotifyStreamRequest"
   record notify-stream-request {
     namespace: string,
     stream-ref: option<stream-reference>,
-    position: list<u8>,
+    position: string,
     counter: option<s64>,
     metadata: list<notify-stream-request-metadata-entry>,
     close: option<bool>,
