@@ -2074,4 +2074,14 @@ service WorkflowService {
     //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc DescribeStreamNotifier (DescribeStreamNotifierRequest) returns (DescribeStreamNotifierResponse) {
     }
+
+    // PollStreamNotifier waits until the notifier of a stream has a counter above `after_counter`,
+    // or the stream is closed. It returns with no change after a wait limit set by the server
+    // (`streamnotifier.pollMaxWait`). A client that reads a stream calls it after a read that
+    // found nothing and armed the topic, in place of another blocking read on the store.
+    //
+    // (-- api-linter: core::0127::http-annotation=disabled
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
+    rpc PollStreamNotifier (PollStreamNotifierRequest) returns (PollStreamNotifierResponse) {
+    }
 }
