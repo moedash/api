@@ -9,6 +9,7 @@ option java_outer_classname = "MessageProto";
 option ruby_package = "Temporalio::Api::History::V1";
 option csharp_namespace = "Temporalio.Api.History.V1";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -306,6 +307,13 @@ message WorkflowTaskScheduledEventAttributes {
     google.protobuf.Duration start_to_close_timeout = 2;
     // Starting at 1, how many attempts there have been to complete this task
     int32 attempt = 3;
+    // Data the server attaches to this task for the Workflow, such as wakes for its stream
+    // readers or progress of its Nexus operations. Opaque to the SDK core. Counts toward the
+    // History size limit.
+    //
+    // (-- api-linter: core::0146::any=disabled
+    //     aip.dev/not-precedent: attachments are meant to hold arbitrary server data. --)
+    repeated google.protobuf.Any attachments = 4;
     // Wakes for the Workflow's stream readers that arrived since the previous Workflow Task was
     // scheduled, at most one entry per reader: the latest one. Recorded here rather than as
     // events of their own, so a burst of wakes costs one task and replay sees the same wakes the
