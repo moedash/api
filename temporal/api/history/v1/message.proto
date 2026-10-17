@@ -9,6 +9,7 @@ option java_outer_classname = "MessageProto";
 option ruby_package = "Temporalio::Api::History::V1";
 option csharp_namespace = "Temporalio.Api.History.V1";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -26,7 +27,6 @@ import "temporal/api/workflow/v1/message.proto";
 import "temporal/api/sdk/v1/task_complete_metadata.proto";
 import "temporal/api/sdk/v1/user_metadata.proto";
 import "temporal/api/sdk/v1/event_group_marker.proto";
-import "temporal/api/stream/v1/message.proto";
 
 // Always the first event in workflow history
 message WorkflowExecutionStartedEventAttributes {
@@ -306,19 +306,13 @@ message WorkflowTaskScheduledEventAttributes {
     google.protobuf.Duration start_to_close_timeout = 2;
     // Starting at 1, how many attempts there have been to complete this task
     int32 attempt = 3;
-    // Progress of the Workflow's Nexus operations that arrived since the previous Workflow Task was
-    // scheduled, at most one entry per operation: the one with the highest counter. Recorded here
-    // rather than as events of its own, so a burst of progress costs one task and replay sees the
-    // same progress the Workflow saw. Its size is bounded by the Workflow's pending Nexus operation
-    // limit times the per-entry bounds on `position` and `metadata`, about 3 KiB per operation, and
-    // it counts toward the History size limit.
-    repeated temporal.api.nexus.v1.NexusOperationProgress nexus_operation_progress = 4;
-    // Wakes for the Workflow's stream readers that arrived since the previous Workflow Task was
-    // scheduled, at most one entry per reader: the latest one. Recorded here rather than as
-    // events of their own, so a burst of wakes costs one task and replay sees the same wakes the
-    // Workflow saw. Bounded by `history.maximumStreamWakeSources` readers per execution, and it
-    // counts toward the History size limit.
-    repeated temporal.api.stream.v1.StreamWake stream_wakes = 5;
+    // Data the server attaches to this task for the Workflow, such as wakes for its stream
+    // readers or progress of its Nexus operations. Opaque to the SDK core. Counts toward the
+    // History size limit.
+    //
+    // (-- api-linter: core::0146::any=disabled
+    //     aip.dev/not-precedent: attachments are meant to hold arbitrary server data. --)
+    repeated google.protobuf.Any attachments = 4;
 }
 
 message WorkflowTaskStartedEventAttributes {
