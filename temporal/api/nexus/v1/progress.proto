@@ -16,12 +16,29 @@ option csharp_namespace = "Temporalio.Api.Nexus.V1";
 // output itself, starting from `position`. Deliveries may arrive out of order or be dropped, so a
 // receiver keeps the one with the highest `counter` and drops any lower one.
 message NexusOperationProgress {
+    // Names a caller Workflow's operation by the values the Workflow already knows. The Workflow
+    // gives the endpoint, service and operation in its schedule command, and gets the token when
+    // the operation starts. A token is unique only within one handler, so the token alone is not
+    // a key.
+    message OperationKey {
+        string endpoint = 1;
+        string service = 2;
+        string operation = 3;
+        // The token from the server's own record of the operation start, not from the handler's
+        // progress request.
+        string operation_token = 4;
+    }
+
+    reserved 1;
+    reserved "scheduled_event_id";
+
     // The operation this progress belongs to. A handler leaves it unset, since the callback already
     // identifies the operation. The server sets it when it hands progress to a caller. A oneof, so
     // a later case can name an operation that no Workflow schedules, such as a standalone one.
     oneof operation {
-        // The event ID of the `NEXUS_OPERATION_SCHEDULED` event of the caller Workflow's operation.
-        int64 scheduled_event_id = 1;
+        // The caller Workflow's operation. Set on the progress that the server attaches to a
+        // Workflow Task.
+        OperationKey operation_key = 5;
     }
     // Where the operation's output stands after the change this progress reports, in the
     // handler's terms, such as a stream cursor. Opaque to the server, which rejects a position
