@@ -1,7 +1,8 @@
 // Nexus service that a Worker implements to take NexusHandler callbacks. The server calls
 // OnComplete for the callback's `operation` and OnProgress for its `progress_operation`. Both
 // operations complete synchronously. The records are backed by the messages in
-// temporal/api/notificationservice/v1/request_response.proto, which hold the full comments.
+// temporal/api/notificationservice/v1/request_response.proto and progress.proto, which hold the
+// full comments.
 package temporal:nexus@1.0.0;
 
 world system {

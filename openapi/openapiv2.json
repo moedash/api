@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "temporal/api/workflowservice/v1/request_response.proto",
+    "title": "temporal/api/workflowservice/v1/nexus_request_response.proto",
     "version": "version not set"
   },
   "tags": [
