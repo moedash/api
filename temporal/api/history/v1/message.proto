@@ -27,7 +27,6 @@ import "temporal/api/workflow/v1/message.proto";
 import "temporal/api/sdk/v1/task_complete_metadata.proto";
 import "temporal/api/sdk/v1/user_metadata.proto";
 import "temporal/api/sdk/v1/event_group_marker.proto";
-import "temporal/api/stream/v1/message.proto";
 
 // Always the first event in workflow history
 message WorkflowExecutionStartedEventAttributes {
@@ -314,12 +313,6 @@ message WorkflowTaskScheduledEventAttributes {
     // (-- api-linter: core::0146::any=disabled
     //     aip.dev/not-precedent: attachments are meant to hold arbitrary server data. --)
     repeated google.protobuf.Any attachments = 4;
-    // Wakes for the Workflow's stream readers that arrived since the previous Workflow Task was
-    // scheduled, at most one entry per reader: the latest one. Recorded here rather than as
-    // events of their own, so a burst of wakes costs one task and replay sees the same wakes the
-    // Workflow saw. Bounded by `history.maximumStreamWakeSources` readers per execution, and it
-    // counts toward the History size limit.
-    repeated temporal.api.stream.v1.StreamWake stream_wakes = 5;
 }
 
 message WorkflowTaskStartedEventAttributes {
