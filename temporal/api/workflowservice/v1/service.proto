@@ -2051,21 +2051,22 @@ service WorkflowService {
     rpc AttachStreamCallback (AttachStreamCallbackRequest) returns (AttachStreamCallbackResponse) {
     }
 
-    // DetachStreamCallback removes a callback from the notifier of a stream. The notifier completes
-    // the callback's operation as canceled and sends it no more progress. A Nexus handler calls it
-    // when the caller cancels the operation.
+    // DetachStreamCallback cancels a callback on the notifier of a stream. The notifier removes the
+    // callback, completes its operation as canceled and sends it no more progress. A Nexus handler
+    // calls it when the caller cancels the operation.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
     //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc DetachStreamCallback (DetachStreamCallbackRequest) returns (DetachStreamCallbackResponse) {
     }
 
-    // WaitStreamCallback asks the notifier of a stream to wake one idle callback once, when the
-    // notifier's counter passes `after_counter`. If it passed already, the wake goes out at once.
-    // After the delivery the callback is idle again. A reader calls it when a read finds nothing.
-    // The handler of a stream operation calls it for its caller, and a Workflow reader's Worker
-    // for its `workflow_target`. So a busy stream that the reader keeps up with sends the reader
-    // nothing. Waiting on a callback that is not idle changes nothing.
+    // WaitStreamCallback arms one wake for an idle callback and returns at once. It does not block
+    // until the wake. The notifier wakes the callback once, when its counter passes
+    // `after_counter`. If it passed already, the wake goes out at once. After the delivery the
+    // callback is idle again. A reader calls it when a read finds nothing. The handler of a stream
+    // operation calls it for its caller, and a Workflow reader's Worker for its `workflow_target`.
+    // So a busy stream that the reader keeps up with sends the reader nothing. Waiting on a
+    // callback that is not idle changes nothing.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
     //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
