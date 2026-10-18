@@ -2048,9 +2048,8 @@ service WorkflowService {
     // starts the notifier when the stream has none.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc AttachStreamCallback (AttachStreamCallbackRequest) returns (AttachStreamCallbackResponse) {
-        option (nexusannotations.v1.operation).tags = "exposed";
     }
 
     // DetachStreamCallback cancels a callback on the notifier of a stream. The notifier removes the
@@ -2058,9 +2057,8 @@ service WorkflowService {
     // calls it when the caller cancels the operation.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc DetachStreamCallback (DetachStreamCallbackRequest) returns (DetachStreamCallbackResponse) {
-        option (nexusannotations.v1.operation).tags = "exposed";
     }
 
     // WaitStreamCallback arms one wake for an idle callback and returns at once. It does not block
@@ -2072,9 +2070,8 @@ service WorkflowService {
     // callback that is not idle changes nothing.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc WaitStreamCallback (WaitStreamCallbackRequest) returns (WaitStreamCallbackResponse) {
-        option (nexusannotations.v1.operation).tags = "exposed";
     }
 
     // NotifyStream tells the notifier of a stream that the stream moved, or that it closed. The
@@ -2086,16 +2083,15 @@ service WorkflowService {
     // when the stream has none, so a callback that attaches later still gets the close outcome.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc NotifyStream (NotifyStreamRequest) returns (NotifyStreamResponse) {
-        option (nexusannotations.v1.operation).tags = "exposed";
     }
 
     // DescribeStreamNotifier returns the state of the notifier of a stream and its callbacks. It is
-    // for operators and tools, so it is not exposed through System Nexus.
+    // for operators and tools.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc DescribeStreamNotifier (DescribeStreamNotifierRequest) returns (DescribeStreamNotifierResponse) {
     }
 
@@ -2104,19 +2100,18 @@ service WorkflowService {
     // (`streamnotifier.pollMaxWait`). A client that reads a stream calls it after a read that
     // found nothing, in place of another blocking read on the store. It starts the notifier when the
     // stream has none. The client reads the stream once more after the poll starts, since a
-    // notification that came before the notifier existed was dropped. It is a long poll, so it is
-    // not exposed through System Nexus.
+    // notification that came before the notifier existed was dropped.
     //
     // (-- api-linter: core::0127::http-annotation=disabled
-    //     aip.dev/not-precedent: SDKs reach the stream notifier through System Nexus or gRPC. --)
+    //     aip.dev/not-precedent: SDKs reach the stream notifier through gRPC. --)
     rpc PollStreamNotifier (PollStreamNotifierRequest) returns (PollStreamNotifierResponse) {
     }
 
     // ExecuteSyncNexusOperation runs one synchronous Nexus operation on an endpoint for a caller in
     // `namespace`, and returns its result or its failure. The server persists nothing and does not
-    // retry. Authorization runs against the caller namespace, and the endpoint must be reachable
-    // from it. An operation that answers asynchronously is refused with `FailedPrecondition`. Use
-    // `StartNexusOperationExecution` for those.
+    // retry. Authorization runs against the caller namespace and against the endpoint's target
+    // namespace, as on the Nexus HTTP route. An operation that answers asynchronously is refused
+    // with `FailedPrecondition`. Use `StartNexusOperationExecution` for those.
     //
     // The server sets the Nexus header `temporal-caller-namespace` to the caller namespace, so the
     // handler can trust it. A request that sets this header is refused.
