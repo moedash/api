@@ -1,0 +1,253 @@
+syntax = "proto3";
+
+package temporal.api.streamservice.v1;
+
+option go_package = "go.temporal.io/api/streamservice/v1;streamservice";
+option java_package = "io.temporal.api.streamservice.v1";
+option java_multiple_files = true;
+option java_outer_classname = "StreamServiceProto";
+option ruby_package = "Temporalio::Api::StreamService::V1";
+option csharp_namespace = "Temporalio.Api.StreamService.V1";
+
+// The messages of the Stream service. Field for field the protos of the Brook Stream crate,
+// so a Store and the server answer the same five operations with the same messages. Every
+// message and enum is in this one package for now.
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "temporal/api/common/v1/message.proto";
+import "temporal/api/failure/v1/message.proto";
+
+// Identifies one Stream. The id is opaque to callers.
+message StreamRef {
+    string id = 1;
+    // The Workflow that owns the Stream. Set on a Workflow's ref, empty on a standalone,
+    // client or Activity ref. The Store keys on id only and never reads these.
+    string workflow_id = 2;
+    string first_execution_run_id = 3;
+    // The name of the backend that holds the Stream, as the Worker and client config register
+    // it, so every process routes a ref it receives. Empty is the default backend. The Store
+    // never reads it.
+    string backend = 4;
+}
+
+enum ProducerKind {
+    PRODUCER_KIND_UNSPECIFIED = 0;
+    PRODUCER_KIND_WORKFLOW = 1;
+    PRODUCER_KIND_LOCAL_ACTIVITY = 2;
+    PRODUCER_KIND_ACTIVITY = 3;
+    PRODUCER_KIND_CLIENT = 4;
+    PRODUCER_KIND_STANDALONE_ACTIVITY = 5;
+}
+
+// The ordered attempt of a Producer. Compared in this order: task_started_event_id,
+// task_attempt, task_started_time, attempt_scheduled_time, attempt. A field that a kind does
+// not use is empty and compares as zero. A timestamp compares seconds, then nanos.
+message ProducerEpoch {
+    // Workflow and Local Activity: the (dispatching) Workflow Task.
+    int64 task_started_event_id = 1;
+    int32 task_attempt = 2;
+    // Tells a reused started event id apart, for example after a dropped speculative task.
+    google.protobuf.Timestamp task_started_time = 5;
+    // Activity: when the server scheduled this attempt. A reset makes it later.
+    google.protobuf.Timestamp attempt_scheduled_time = 3;
+    // Activity, Local Activity and client attempt.
+    int32 attempt = 4;
+}
+
+message Producer {
+    ProducerKind kind = 1;
+    string id = 2;
+    ProducerEpoch epoch = 3;
+    // The run of the Producer, so nobody parses the id. Empty for a client.
+    string run_id = 4;
+}
+
+message WorkflowTaskEpoch {
+    int64 started_event_id = 1;
+    int32 attempt = 2;
+    google.protobuf.Timestamp started_time = 3;
+}
+
+message AppendRecord {
+    // Empty is the default Topic.
+    string topic = 1;
+    temporal.api.common.v1.Payload body = 2;
+}
+
+enum StreamRecordKind {
+    STREAM_RECORD_KIND_UNSPECIFIED = 0;
+    STREAM_RECORD_KIND_DATA = 1;
+    // Lua flags the first batch of a new epoch. The read makes this Record from the flag.
+    STREAM_RECORD_KIND_SUPERSEDED = 2;
+    STREAM_RECORD_KIND_CLOSE = 3;
+    // A Reader that stops after a quiet period sets its own timer and resumes from next_offset.
+    reserved 4;
+    reserved "STREAM_RECORD_KIND_IDLE";
+}
+
+message Supersession {
+    ProducerKind producer_kind = 1;
+    string producer_id = 2;
+    ProducerEpoch epoch = 3;
+    // Workflow only.
+    WorkflowTaskEpoch previous_completed_task = 4;
+    repeated int64 failed_tasks = 5;
+    // Workflow retry only. The previous run. Every Record whose Producer carries it is withdrawn.
+    string withdraw_run = 6;
+    // The run of the Producer, so nobody parses the id. Empty for a client.
+    string run_id = 7;
+}
+
+// An offset is the Redis entry id packed as ms << 20 | seq. It is ordered and unique in one
+// Stream, and it is sparse: offsets have gaps, so they don't count Records. Zero is never an
+// offset. A read names its Stream, so the read checks the offset against that Stream.
+message StreamRecord {
+    StreamRecordKind kind = 1;
+    int64 offset = 2;
+    string topic = 3;
+    Producer producer = 4;
+    temporal.api.common.v1.Payload body = 5;
+    Supersession supersession = 6;
+    temporal.api.common.v1.Payload close_result = 7;
+    temporal.api.failure.v1.Failure close_failure = 8;
+}
+
+// Idempotent for one id, one Retention and one auto_close. ALREADY_EXISTS for another
+// Retention or another auto_close.
+message CreateStreamRequest {
+    string namespace = 1;
+    // Required from Workflow code.
+    string stream_id = 2;
+    // The age after which a Record is dropped. Empty is the Store default.
+    google.protobuf.Duration retention = 3;
+    // Workflow only. A retry run's first create: the previous run, whose Records it withdraws.
+    string withdraw_run = 4;
+    // Close the Stream with no result when no Record was appended for this long, counted from
+    // the create. Empty never closes on its own. It is separate from Retention and the safety
+    // TTL. The Store applies it on the next access, so no call sees the Stream open after the
+    // period. UNIMPLEMENTED (detail stream_unsupported) on a Store that can't.
+    google.protobuf.Duration auto_close = 5;
+    // The Workflow run that owns the Stream. Workflow kind, with its run_id and epoch.
+    Producer owner = 6;
+    // Close the Stream with the result or the failure of the owner's run chain when the chain
+    // closes, terminate and timeout included. Needs owner, and ref with the owner fields.
+    bool close_with_run = 7;
+    // The ref of the Stream. A Workflow-owned Stream sets workflow_id and
+    // first_execution_run_id, which name the owner's run chain.
+    StreamRef ref = 8;
+}
+
+enum StreamStatus {
+    STREAM_STATUS_UNSPECIFIED = 0;
+    STREAM_STATUS_OPEN = 1;
+    STREAM_STATUS_CLOSED = 2;
+    STREAM_STATUS_EXPIRED = 3;
+}
+
+message CreateStreamResponse {
+    StreamRef stream = 1;
+    bool created = 2;
+    StreamStatus status = 3;
+}
+
+// FAILED_PRECONDITION if closed, fenced, or if the Stream's meta has a higher format version v
+// (detail stream_format_too_new). NOT_FOUND if absent.
+message AppendRecordsRequest {
+    string namespace = 1;
+    StreamRef stream = 2;
+    // Required outside a Workflow. In a Workflow the transport sets it.
+    Producer producer = 3;
+    // The batch number in this epoch. With the Producer and epoch it is the dedupe key.
+    int64 sequence = 4;
+    repeated AppendRecord records = 5;
+    // Workflow only. The failed tasks are those since this run's last flush to this Stream.
+    WorkflowTaskEpoch previous_completed_task = 6;
+    repeated int64 failed_tasks = 7;
+    // Workflow only. A retry run's first batch: the previous run, whose Records it withdraws.
+    string withdraw_run = 8;
+    // Workflow only. The batch before a Local Activity, whose task facts come later with the
+    // task's completion. It withdraws no task and keeps no facts. withdraw_run still applies.
+    bool defer_withdrawal = 9;
+}
+
+message AppendRecordsResponse {
+    int64 first_offset = 1;
+    int64 last_offset = 2;
+}
+
+message CloseStreamRequest {
+    string namespace = 1;
+    StreamRef stream = 2;
+    Producer producer = 3;
+    temporal.api.common.v1.Payload result = 4;
+    temporal.api.failure.v1.Failure failure = 5;
+    // Workflow only.
+    WorkflowTaskEpoch previous_completed_task = 6;
+    repeated int64 failed_tasks = 7;
+    // Workflow only. A retry run's close: the previous run, whose Records it withdraws.
+    string withdraw_run = 8;
+}
+
+message CloseStreamResponse {
+}
+
+enum ReadStart {
+    READ_START_UNSPECIFIED = 0;
+    READ_START_BEGINNING = 1;
+    READ_START_END = 2;
+}
+
+message ReadRecordsRequest {
+    string namespace = 1;
+    StreamRef stream = 2;
+    // Start at this offset. Zero uses start. INVALID_ARGUMENT if past the newest offset + 1.
+    int64 from_offset = 3;
+    ReadStart start = 4;
+    // Empty reads every Topic in one order.
+    repeated string topics = 5;
+    int32 max_records = 6;
+    google.protobuf.Duration wait = 7;
+    // How long to wait for a Stream that nobody created yet. Empty fails at once with
+    // NOT_FOUND. At most 60 s.
+    google.protobuf.Duration create_wait = 8;
+    reserved 9;
+    reserved "idle_timeout";
+    // Also read the Topics that start with one of these. A Record passes when its Topic is in
+    // topics or starts with a prefix. Both empty reads every Topic.
+    repeated string topic_prefixes = 10;
+    // The exclusive end of the read. The read scans no entry at or after it, the close Record
+    // included, so a replay reads the same range. Zero means no end.
+    int64 to_offset = 11;
+    // Park as a normal read, then answer with no Records and next_offset = from_offset, when a
+    // Record that passes the filter exists, when the Stream closes (done), or when wait ends.
+    bool wake_only = 12;
+}
+
+message ReadRecordsResponse {
+    repeated StreamRecord records = 1;
+    // The from_offset of the next read: the newest offset read + 1.
+    int64 next_offset = 2;
+    bool done = 3;
+}
+
+message DescribeStreamRequest {
+    string namespace = 1;
+    StreamRef stream = 2;
+}
+
+message DescribeStreamResponse {
+    StreamStatus status = 1;
+    // Zero when the Stream has no Record.
+    int64 last_offset = 2;
+    google.protobuf.Duration retention = 3;
+    // The auto_close of the create. Empty when the Stream has none.
+    google.protobuf.Duration auto_close = 4;
+}
+
+// The details of a failed Stream call, in the gRPC status details and in the details of the
+// application failure of a Nexus operation.
+message StreamErrorDetails {
+    // A token such as `stream_closed`, `stream_fenced` or `stream_format_too_new`.
+    string reason = 1;
+}

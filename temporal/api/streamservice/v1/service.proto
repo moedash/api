@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package temporal.api.streamservice.v1;
+
+option go_package = "go.temporal.io/api/streamservice/v1;streamservice";
+option java_package = "io.temporal.api.streamservice.v1";
+option java_multiple_files = true;
+option java_outer_classname = "ServiceProto";
+option ruby_package = "Temporalio::Api::StreamService::V1";
+option csharp_namespace = "Temporalio.Api.StreamService.V1";
+
+import "temporal/api/streamservice/v1/stream_service.proto";
+
+// StreamService serves Streams that the server stores. A Stream is an ordered log of Records
+// with sparse offsets, Topics, a close with a result or a failure, and a Retention.
+//
+// Workflow code calls the same five operations as System Nexus operations on the
+// `__temporal_system` endpoint, under the service name `temporal.api.streamservice.v1.StreamService`.
+// Activities and clients call this gRPC service. Each request names its namespace.
+service StreamService {
+    // CreateStream creates a Stream, idempotently for one id, one Retention and one auto close.
+    rpc CreateStream (CreateStreamRequest) returns (CreateStreamResponse) {
+    }
+
+    // AppendRecords appends a batch of Records to an open Stream.
+    rpc AppendRecords (AppendRecordsRequest) returns (AppendRecordsResponse) {
+    }
+
+    // CloseStream closes a Stream with an optional result or failure. Readers drain what is
+    // left, then end.
+    rpc CloseStream (CloseStreamRequest) returns (CloseStreamResponse) {
+    }
+
+    // ReadRecords reads Records from an offset. It is a long poll that waits up to `wait` for a
+    // new Record and up to `create_wait` for a Stream that nobody created yet.
+    rpc ReadRecords (ReadRecordsRequest) returns (ReadRecordsResponse) {
+    }
+
+    // DescribeStream answers the status, the newest offset, the Retention and the auto close of
+    // a Stream.
+    rpc DescribeStream (DescribeStreamRequest) returns (DescribeStreamResponse) {
+    }
+}
