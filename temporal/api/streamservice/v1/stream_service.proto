@@ -131,10 +131,11 @@ message CreateStreamRequest {
     // The Workflow run that owns the Stream. Workflow kind, with its run_id and epoch.
     Producer owner = 6;
     // Close the Stream with the result or the failure of the owner's run chain when the chain
-    // closes, terminate and timeout included. Needs owner and owner_workflow_id.
+    // closes, terminate and timeout included. Needs owner, and ref with the owner fields.
     bool close_with_run = 7;
-    // The Workflow id of the owner, so the server can check the owner's run chain.
-    string owner_workflow_id = 8;
+    // The ref of the Stream. A Workflow-owned Stream sets workflow_id and
+    // first_execution_run_id, which name the owner's run chain.
+    StreamRef ref = 8;
 }
 
 enum StreamStatus {
