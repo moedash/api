@@ -61,6 +61,21 @@
     - "core::0127::http-annotation" # Do not require HTTP annotations on OperatorService calls at this time -- https://linter.aip.dev/127/http-annotation
 
 - included_paths:
+    - "**/streamservice/v1/service.proto"
+  disabled_rules:
+    - "core::0127::http-annotation" # The Stream service is gRPC and System Nexus only for now -- https://linter.aip.dev/127/http-annotation
+    - "core::0131" # https://linter.aip.dev/0131
+    - "core::0133" # https://linter.aip.dev/0133
+
+- included_paths:
+    - "**/streamservice/v1/stream_service.proto"
+  disabled_rules:
+    - "core::0133" # The requests keep the fields of the Brook Stream crate, which names the Stream by id -- https://linter.aip.dev/0133
+    - "core::0140::prepositions" # `from_offset` is the field name of the Brook Stream crate -- https://linter.aip.dev/140/prepositions
+    - "core::0191::file-layout" # The file keeps the order of the Brook Stream crate's proto -- https://linter.aip.dev/191/file-layout
+    - "core::0216::synonyms" # `StreamStatus` is the name of the Brook Stream crate -- https://linter.aip.dev/216/synonyms
+
+- included_paths:
     - "google/**/*.proto"
   disabled_rules:
     - "all"
