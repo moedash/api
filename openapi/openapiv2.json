@@ -2026,6 +2026,67 @@
         ]
       }
     },
+    "/api/v1/namespaces/{namespace}/nexus-requests/endpoints/{endpoint}/services/{service}/operations/{operation}": {
+      "post": {
+        "summary": "StartNexusOperation starts a Nexus operation on an endpoint, communicating directly with the\nendpoint using the caller's namespace credentials. No caller-side state is created.\nThe response follows the Nexus RPC spec semantics: synchronous completion, asynchronous start,\nor operation error.\nHandler errors (e.g., NOT_FOUND, BAD_REQUEST) are returned as gRPC errors.",
+        "operationId": "StartNexusOperation2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartNexusOperationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "description": "The namespace to authenticate to. This may be different from the target namespace of the specified endpoint.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endpoint",
+            "description": "Endpoint name, resolved via the Temporal service's endpoint registry.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "service",
+            "description": "Nexus service name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "operation",
+            "description": "Nexus operation name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceStartNexusOperationBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
     "/api/v1/namespaces/{namespace}/schedule-count": {
       "get": {
         "summary": "CountSchedules is a visibility API to count schedules in a specific namespace.",
@@ -7679,6 +7740,67 @@
         ]
       }
     },
+    "/namespaces/{namespace}/nexus-requests/endpoints/{endpoint}/services/{service}/operations/{operation}": {
+      "post": {
+        "summary": "StartNexusOperation starts a Nexus operation on an endpoint, communicating directly with the\nendpoint using the caller's namespace credentials. No caller-side state is created.\nThe response follows the Nexus RPC spec semantics: synchronous completion, asynchronous start,\nor operation error.\nHandler errors (e.g., NOT_FOUND, BAD_REQUEST) are returned as gRPC errors.",
+        "operationId": "StartNexusOperation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartNexusOperationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "description": "The namespace to authenticate to. This may be different from the target namespace of the specified endpoint.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endpoint",
+            "description": "Endpoint name, resolved via the Temporal service's endpoint registry.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "service",
+            "description": "Nexus service name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "operation",
+            "description": "Nexus operation name.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowServiceStartNexusOperationBody"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowService"
+        ]
+      }
+    },
     "/namespaces/{namespace}/schedule-count": {
       "get": {
         "summary": "CountSchedules is a visibility API to count schedules in a specific namespace.",
@@ -11332,7 +11454,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links to be associated with the WorkflowExecutionSignaled event."
         }
@@ -11372,6 +11494,33 @@
       ],
       "default": "RUNTIME_TYPE_UNSPECIFIED",
       "description": " - RUNTIME_TYPE_UNSPECIFIED: Should never actually be set, exists to follow convention of having a default.\nSDKs should just leave `runtimes` empty if none can be determined.\n - RUNTIME_TYPE_GRAAL_AOT: Report when the application is compiled ahead-of-time as a GraalVM native image.\n - RUNTIME_TYPE_KOTLIN: Report when any registered Workflow or Activity implementation is a Kotlin class."
+    },
+    "StartNexusOperationResponseAsyncSuccess": {
+      "type": "object",
+      "properties": {
+        "operationToken": {
+          "type": "string"
+        }
+      },
+      "description": "An operation was started asynchronously. The token can be used for cancellation."
+    },
+    "StartNexusOperationResponseOperationFailure": {
+      "type": "object",
+      "properties": {
+        "failure": {
+          "$ref": "#/definitions/v1Failure"
+        }
+      },
+      "description": "The operation completed unsuccessfully.\nThe operation is considered canceled if the failure has a CanceledFailureInfo object attached."
+    },
+    "StartNexusOperationResponseSyncSuccess": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/v1Payload"
+        }
+      },
+      "description": "An operation completed successfully and synchronously."
     },
     "UpdateTaskQueueConfigRequestRateLimitUpdate": {
       "type": "object",
@@ -12717,6 +12866,31 @@
         }
       }
     },
+    "WorkflowServiceStartNexusOperationBody": {
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "string",
+          "description": "The identity of the client who initiated this request."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "A unique identifier for this request, used as an idempotency key."
+        },
+        "input": {
+          "$ref": "#/definitions/v1Payload",
+          "description": "Serialized input to the operation."
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/apiCommonV1Link"
+          },
+          "description": "Links for associating the caller with the operation."
+        }
+      }
+    },
     "WorkflowServiceStartNexusOperationExecutionBody": {
       "type": "object",
       "properties": {
@@ -13576,6 +13750,30 @@
       },
       "description": "Common callback information. Specific CallbackInfo messages should embed this and may include additional fields."
     },
+    "apiCommonV1Link": {
+      "type": "object",
+      "properties": {
+        "workflowEvent": {
+          "$ref": "#/definitions/LinkWorkflowEvent"
+        },
+        "batchJob": {
+          "$ref": "#/definitions/LinkBatchJob"
+        },
+        "activity": {
+          "$ref": "#/definitions/LinkActivity"
+        },
+        "nexusOperation": {
+          "$ref": "#/definitions/LinkNexusOperation"
+        },
+        "workflow": {
+          "$ref": "#/definitions/LinkWorkflow"
+        },
+        "callback": {
+          "$ref": "#/definitions/v1LinkCallback"
+        }
+      },
+      "description": "Link can be associated with history events. It might contain information about an external entity\nrelated to the history event. For example, workflow A makes a Nexus call that starts workflow B:\nin this case, a history event in workflow A could contain a Link to the workflow started event in\nworkflow B, and vice-versa."
+    },
     "apiCommonV1OnConflictOptions": {
       "type": "object",
       "properties": {
@@ -13593,6 +13791,18 @@
         }
       },
       "description": "When starting an execution with a conflict policy that uses an existing execution and there is already an existing\nrunning execution, OnConflictOptions defines actions to be taken on the existing running execution."
+    },
+    "apiNexusV1Link": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "See https://github.com/nexus-rpc/api/blob/main/SPEC.md#links."
+        },
+        "type": {
+          "type": "string"
+        }
+      }
     },
     "apiNexusoperationV1CallbackInfo": {
       "type": "object",
@@ -13728,7 +13938,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links associated with the callback. It can be used to link to underlying resources of the\ncallback."
         }
@@ -13905,7 +14115,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links to related entities, such as the entity that started this activity."
         },
@@ -16650,7 +16860,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links to related entities, such as the entity that started this event's workflow."
         },
@@ -16919,30 +17129,6 @@
         }
       },
       "description": "IntervalSpec matches times that can be expressed as:\nepoch + n * interval + phase\nwhere n is an integer.\nphase defaults to zero if missing. interval is required.\nBoth interval and phase must be non-negative and are truncated to the nearest\nsecond before any calculations.\nFor example, an interval of 1 hour with phase of zero would match every hour,\non the hour. The same interval but a phase of 19 minutes would match every\nxx:19:00. An interval of 28 days with phase zero would match\n2022-02-17T00:00:00Z (among other times). The same interval with a phase of 3\ndays, 5 hours, and 23 minutes would match 2022-02-20T05:23:00Z instead."
-    },
-    "v1Link": {
-      "type": "object",
-      "properties": {
-        "workflowEvent": {
-          "$ref": "#/definitions/LinkWorkflowEvent"
-        },
-        "batchJob": {
-          "$ref": "#/definitions/LinkBatchJob"
-        },
-        "activity": {
-          "$ref": "#/definitions/LinkActivity"
-        },
-        "nexusOperation": {
-          "$ref": "#/definitions/LinkNexusOperation"
-        },
-        "workflow": {
-          "$ref": "#/definitions/LinkWorkflow"
-        },
-        "callback": {
-          "$ref": "#/definitions/v1LinkCallback"
-        }
-      },
-      "description": "Link can be associated with history events. It might contain information about an external entity\nrelated to the history event. For example, workflow A makes a Nexus call that starts workflow B:\nin this case, a history event in workflow A could contain a Link to the workflow started event in\nworkflow B, and vice-versa."
     },
     "v1LinkCallback": {
       "type": "object",
@@ -17879,7 +18065,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links attached by the handler of this operation on start or completion."
         },
@@ -18891,7 +19077,7 @@
           "$ref": "#/definitions/v1QueryRejected"
         },
         "link": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Holds the link to the Workflow execution that processed the Query."
         }
       }
@@ -19103,7 +19289,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1Link"
+            "$ref": "#/definitions/apiCommonV1Link"
           },
           "description": "Links to be associated with this update."
         },
@@ -20040,7 +20226,7 @@
           "description": "If true, a new workflow was started."
         },
         "signalLink": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Link to be associated with the WorkflowExecutionSignaled event.\nAdded on the response to propagate the backlink.\nAvailable from Temporal server 1.31 and up."
         }
       }
@@ -20049,7 +20235,7 @@
       "type": "object",
       "properties": {
         "link": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Link to be associated with the WorkflowExecutionSignaled event.\nAdded on the response to propagate the backlink.\nAvailable from Temporal server 1.31 and up."
         }
       }
@@ -20066,7 +20252,7 @@
           "description": "If true, a new activity was started."
         },
         "link": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Link to the started activity."
         },
         "eagerActivityTask": {
@@ -20225,6 +20411,28 @@
         }
       }
     },
+    "v1StartNexusOperationResponse": {
+      "type": "object",
+      "properties": {
+        "syncSuccess": {
+          "$ref": "#/definitions/StartNexusOperationResponseSyncSuccess"
+        },
+        "asyncSuccess": {
+          "$ref": "#/definitions/StartNexusOperationResponseAsyncSuccess"
+        },
+        "operationFailure": {
+          "$ref": "#/definitions/StartNexusOperationResponseOperationFailure"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/apiNexusV1Link"
+          },
+          "description": "Links associated with the operation, as returned by the handler."
+        }
+      }
+    },
     "v1StartWorkflowExecutionResponse": {
       "type": "object",
       "properties": {
@@ -20249,7 +20457,7 @@
           "description": "When `request_eager_execution` is set on the `StartWorkflowExecutionRequest`, the server - if supported - will\nreturn the first workflow task to be eagerly executed.\nThe caller is expected to have a worker available to process the task."
         },
         "link": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Link to the workflow event."
         }
       }
@@ -21009,7 +21217,7 @@
           "description": "The most advanced lifecycle stage that the Update is known to have\nreached, where lifecycle stages are ordered\nUPDATE_WORKFLOW_EXECUTION_LIFECYCLE_STAGE_UNSPECIFIED <\nUPDATE_WORKFLOW_EXECUTION_LIFECYCLE_STAGE_ADMITTED <\nUPDATE_WORKFLOW_EXECUTION_LIFECYCLE_STAGE_ACCEPTED <\nUPDATE_WORKFLOW_EXECUTION_LIFECYCLE_STAGE_COMPLETED.\nUNSPECIFIED will be returned if and only if the server's maximum wait\ntime was reached before the Update reached the stage specified in the\nrequest WaitPolicy, and before the context deadline expired; clients may\nmay then retry the call as needed."
         },
         "link": {
-          "$ref": "#/definitions/v1Link",
+          "$ref": "#/definitions/apiCommonV1Link",
           "description": "Link to the update event. May be null if the update has not yet been accepted."
         },
         "propagatedNexusSerializationContext": {
