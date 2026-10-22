@@ -128,6 +128,13 @@ message CreateStreamRequest {
     // TTL. The Store applies it on the next access, so no call sees the Stream open after the
     // period. UNIMPLEMENTED (detail stream_unsupported) on a Store that can't.
     google.protobuf.Duration auto_close = 5;
+    // The Workflow run that owns the Stream. Workflow kind, with its run_id and epoch.
+    Producer owner = 6;
+    // Close the Stream with the result or the failure of the owner's run chain when the chain
+    // closes, terminate and timeout included. Needs owner and owner_workflow_id.
+    bool close_with_run = 7;
+    // The Workflow id of the owner, so the server can check the owner's run chain.
+    string owner_workflow_id = 8;
 }
 
 enum StreamStatus {
@@ -174,6 +181,8 @@ message CloseStreamRequest {
     // Workflow only.
     WorkflowTaskEpoch previous_completed_task = 6;
     repeated int64 failed_tasks = 7;
+    // Workflow only. A retry run's close: the previous run, whose Records it withdraws.
+    string withdraw_run = 8;
 }
 
 message CloseStreamResponse {
@@ -224,4 +233,11 @@ message DescribeStreamResponse {
     google.protobuf.Duration retention = 3;
     // The auto_close of the create. Empty when the Stream has none.
     google.protobuf.Duration auto_close = 4;
+}
+
+// The details of a failed Stream call, in the gRPC status details and in the details of the
+// application failure of a Nexus operation.
+message StreamErrorDetails {
+    // A token such as `stream_closed`, `stream_fenced` or `stream_format_too_new`.
+    string reason = 1;
 }
