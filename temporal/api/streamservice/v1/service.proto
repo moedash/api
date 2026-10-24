@@ -18,7 +18,7 @@ import "temporal/api/streamservice/v1/stream_service.proto";
 // `__temporal_system` endpoint, under the service name `temporal.api.streamservice.v1.StreamService`.
 // Activities and clients call this gRPC service. Each request names its namespace.
 service StreamService {
-    // CreateStream creates a Stream, idempotently for one id, one Retention and one auto close.
+    // CreateStream creates a Stream, idempotently for one id and one Retention.
     rpc CreateStream (CreateStreamRequest) returns (CreateStreamResponse) {
     }
 
@@ -36,8 +36,7 @@ service StreamService {
     rpc ReadRecords (ReadRecordsRequest) returns (ReadRecordsResponse) {
     }
 
-    // DescribeStream answers the status, the newest offset, the Retention and the auto close of
-    // a Stream.
+    // DescribeStream answers the status, the newest offset and the Retention of a Stream.
     rpc DescribeStream (DescribeStreamRequest) returns (DescribeStreamResponse) {
     }
 }
